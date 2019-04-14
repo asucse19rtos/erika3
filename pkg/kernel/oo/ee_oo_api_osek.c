@@ -115,9 +115,12 @@ static FUNC(void, OS_CODE)
 )
 {
   if (p_ccb->s_isr_all_cnt == 0U) {
+  	  /** Counter of nested SuspendOSInterrupts() */
+
     CONST(OsEE_reg, AUTOMATIC) flags = osEE_hal_suspendIRQ();
     p_ccb->prev_s_isr_all_status = flags;
     ++p_ccb->s_isr_all_cnt;
+ 
   } else if (p_ccb->s_isr_all_cnt < OSEE_MAX_BYTE) {
     ++p_ccb->s_isr_all_cnt;
   } else {
