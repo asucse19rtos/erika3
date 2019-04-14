@@ -64,6 +64,8 @@ FUNC(void, OS_CODE)
 {
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
+    /** p_ccb pointer to the CCB (holds the RAM part of the information of the core) */
+
   /* Disable Immediately for Atomicity */
   osEE_hal_disableIRQ();
 
@@ -71,6 +73,8 @@ FUNC(void, OS_CODE)
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_DisableAllInterrupts);
   p_ccb->d_isr_all_cnt = 1U;
+   /** This flag marks whether, at the end of a task, a DisableAllInterrupts()
+   *  was called without a matching call to EnableAllInterrupts() */
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_DisableAllInterrupts);
   return;
 }
