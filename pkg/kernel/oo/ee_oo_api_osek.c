@@ -120,8 +120,8 @@ static FUNC(void, OS_CODE)
     CONST(OsEE_reg, AUTOMATIC) flags = osEE_hal_suspendIRQ();
     p_ccb->prev_s_isr_all_status = flags;
     ++p_ccb->s_isr_all_cnt;
- 
-  } else if (p_ccb->s_isr_all_cnt < OSEE_MAX_BYTE) {
+
+  } else if (p_ccb->s_isr_all_cnt < OSEE_MAX_BYTE) {-
     ++p_ccb->s_isr_all_cnt;
   } else {
 #if (defined(OSEE_HAS_PROTECTIONHOOK))
@@ -1201,14 +1201,23 @@ FUNC(StatusType, OS_CODE)
   {
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, TYPEDEF)
       p_curr_tcb  = p_curr->p_tcb;
+      /**
+         *  The Task Control Block. It stores all the information related to the task
+         *  that can change at runtime such as: number of pending activation, current
+         *  priority, status, wait and event mask, ...
+         */ 
     CONSTP2VAR(OsEE_ResourceDB, AUTOMATIC, TYPEDEF)
       p_reso_db   = (*p_kdb->p_res_ptr_array)[ResID];
+      /* Resource DB The Resource Descriptor Block */
     CONSTP2VAR(OsEE_ResourceCB, AUTOMATIC, TYPEDEF)
       p_reso_cb   = p_reso_db->p_cb;
+      /*The Resource Control Block*/
 
 #if (defined(OSEE_HAS_CHECKS))
     if ((p_reso_cb->p_owner == NULL) ||\
         (p_curr_tcb->p_last_m != p_reso_db))
+          /** p_last_m pointer to the last resource or spinlock taken */
+
     {
 /* [SWS_Os_00801] If Spinlocks and Resources are locked by a Task/ISR they
     have to be unlocked in strict LIFO order. ReleaseResource() shall return
@@ -1223,16 +1232,22 @@ FUNC(StatusType, OS_CODE)
 
       /* Pop the Resources head */
       p_curr_tcb->p_last_m = p_curr_tcb->p_last_m->p_cb->p_next;
+        /** p_cb pointer to the flash descriptor (shortcut to optimize the system access */
+
 
       if (p_curr_tcb->p_last_m != NULL) {
         CONST(TaskPrio, AUTOMATIC)
           prev_prio = p_reso_cb->prev_prio;
+            /** prev_prio this is the previous task priority when the mutex was locked. */
+
 
         p_curr_tcb->current_prio = prev_prio;
         flags = osEE_hal_prepare_ipl(flags, prev_prio);
       } else {
         CONST(TaskPrio, AUTOMATIC)
           dispatch_prio = p_curr->dispatch_prio;
+          /** Task dispatch priority (which is computed based on the fact the task 
+   			*  is non preemptive and based to the internal resources used */
 
         p_curr_tcb->current_prio = dispatch_prio;
         flags = osEE_hal_prepare_ipl(flags, dispatch_prio);
