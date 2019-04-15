@@ -217,6 +217,7 @@ FUNC(StatusType, OS_CODE)
   return ev;
 }
 
+/* get ticks before alarm expires */
 FUNC(StatusType, OS_CODE)
   osEE_alarm_get
 (
@@ -226,25 +227,27 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC) ev;
   CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-    p_trigger_db = osEE_alarm_get_trigger_db(p_alarm_db);
+    p_trigger_db = osEE_alarm_get_trigger_db(p_alarm_db); /**<pointer to trigger descriptor block*/
   CONSTP2CONST(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
-    p_trigger_cb = p_trigger_db->p_trigger_cb;
+    p_trigger_cb = p_trigger_db->p_trigger_cb;  /**< pointer to trigger control block */
   CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
-    p_counter_db = p_trigger_db->p_counter_db;
-#if (!defined(OSEE_SINGLECORE))
+    p_counter_db = p_trigger_db->p_counter_db;  /**< pointer counter descriptor block */
+#if (!defined(OSEE_SINGLECORE))//multicore
+/* get the current core id */
   CONST(CoreIdType, AUTOMATIC)
     counter_core_id = p_counter_db->core_id;
 /* Lock the Core Lock to whom the counter is tied */
   osEE_lock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
-
+  /* check if the trigger status is inactive or canceled, then return E_OS_NOFUNC status*/
   if (p_trigger_cb->status <= OSEE_TRIGGER_CANCELED) {
     ev = E_OS_NOFUNC;
-  } else {
+  } else {/* trigger is active, get the ticks before expiration and return E_OK status */
     *p_tick = osEE_counter_eval_delta(p_counter_db, p_trigger_cb->when);
     ev = E_OK;
   }
 #if (!defined(OSEE_SINGLECORE))
+  /* if multicore unlock core */
   osEE_unlock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
   return ev;
