@@ -1523,7 +1523,15 @@ FUNC(StatusType, OS_CODE)
 
   return ev;
 }
-
+/**
+ * The system service occupies the alarm <AlarmID> element.
+ * After <increment> ticks have elapsed, the task assigned to the alarm <AlarmID> is activated or the assigned event (only for
+ * extended tasks) is set or the alarm-callback routine is called.
+ * @param[in] AlarmID Reference to the alarm element
+ * @param[in] increment Relative value in ticks
+ * @param[in] cycle Cycle value in case of cyclic alarm. In case of single alarms, cycle shall be zero.
+ * @return StatusType
+ */
 #if (defined(OSEE_HAS_ALARMS))
 FUNC(StatusType, OS_CODE)
   SetRelAlarm
@@ -1533,18 +1541,32 @@ FUNC(StatusType, OS_CODE)
   VAR(TickType,   AUTOMATIC)  cycle
 )
 {
-  VAR(StatusType, AUTOMATIC)  ev;
+  VAR(StatusType, AUTOMATIC)  ev; /**< the returned status*/
+  //get a constant pointer to the Kernel descriptor Block
+  // The KDB is the data structure containing the global kernel information.
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
-    p_kdb = osEE_get_kernel();
+    p_kdb = osEE_get_kernel();  /** osEE_get_kernel() Returns the pointer to the Kernel descriptor Block*/
+  //get a constant pointer to CDB data structure, which contains the information related to the only core available.
+  //CDB/CCB CPU Descriptor/Control Block. It stays in the Kernel. 
+  //It contains all the information related to the specific CPU (ready queue, ...). 
+  /**
+ *  This is the Core Descriptor Block. The struct stores all the information
+ *  related to the handling of a core in Flash, such as:
+ *  - core id
+ *  - pointer to the core control block
+ *  - autostart information
+ *  - idle hooks
+ */  
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
+  // get Core control block from core descriptor block  
+  /** if os does not has ORTI and ERRORHOOK define p_ccb as CONSTP2CONST else define it as CONSTP2VAR */  
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
-
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SetRelAlarm);
   osEE_stack_monitoring(p_cdb);
 
@@ -1560,25 +1582,47 @@ FUNC(StatusType, OS_CODE)
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* SetRelAlarm is callable by Task and ISR2 */
+  // check if interrupt is disabled, then set return status to E_OS_DISABLEDINT 
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
-  } else
+  } else/** check if it is legal to call this service call from the current context, if not return E_OS_CALLEVEL*/
   if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
   {
+    /** if current context is more than OSEE_TASK_ISR2_CTX
+     * typedef enum {
+  OSEE_KERNEL_CTX,
+  OSEE_IDLE_CTX,
+  OSEE_TASK_CTX,
+  OSEE_TASK_ISR2_CTX,
+  OSEE_ERRORHOOK_CTX,
+  OSEE_PROTECTIONHOOK_CTX,
+  OSEE_PRETASKHOOK_CTX,
+  OSEE_POSTTASKHOOK_CTX,
+  OSEE_STARTUPHOOK_CTX,
+  OSEE_SHUTDOWNHOOK_CTX,
+  OSEE_ALARMCALLBACK_CTX
+} OsEE_os_context;
+*/
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
-  if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
+  if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {//check if AlarmID is invalid, then return E_OS_ID
     ev = E_OS_ID;
-  } else
+  } else /** if alarm_ID is valid*/
   {
+    // get pointer to the alarm descriptor block with Alarm_ID located in the alarms array inside KDB 
     CONSTP2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)
       p_alarm_db = (*p_kdb->p_alarm_ptr_array)[AlarmID];
+    // get pointer to the counter descriptor block of the current alarm
     CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
       p_counter_db = osEE_alarm_get_trigger_db(p_alarm_db)->p_counter_db;
 
 #if (defined(OSEE_HAS_CHECKS))
     /* SWS_Os_00304 */
+    /** if Value of <increment> outside of the admissible limits (lower than zero or greater than maxallowedvalue), 
+     * OR cycle value not equal to zero and is below min value or more than max value, then
+     * return E_OS_VALUE
+    */
     if ((increment == 0U) ||
         (increment > p_counter_db->info.maxallowedvalue) ||
         ((cycle != 0U) && ((cycle < p_counter_db->info.mincycle) ||
@@ -1589,11 +1633,16 @@ FUNC(StatusType, OS_CODE)
     } else
 #endif /* OSEE_HAS_CHECKS */
     {
+      // OsEE_reg is a register data type
+      /* osEE_begin_primitive() Called as _first_ function of a primitive that can be called from within
+ * an IRQ and from within a task. */
       CONST(OsEE_reg, AUTOMATIC)
         flags = osEE_begin_primitive();
-
+      /** it's time to set tune the alarm and return status*/
       ev = osEE_alarm_set_rel(p_counter_db, p_alarm_db, increment, cycle);
 
+      /* osEE_end_primitive is Called as _last_ function of a primitive that can be called from
+ * within an IRQ or a task. */
       osEE_end_primitive(flags);
     }
   }
