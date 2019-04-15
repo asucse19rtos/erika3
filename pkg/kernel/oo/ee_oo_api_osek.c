@@ -1823,6 +1823,7 @@ FUNC(StatusType, OS_CODE)
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* CancelAlarm is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
+    // check if interrupt is disabled, then set return status to E_OS_DISABLEDINT
     ev = E_OS_DISABLEDINT;
   } else/** check if it is legal to call this service call from the current context, if not return E_OS_CALLEVEL*/
   if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
@@ -1864,7 +1865,12 @@ FUNC(StatusType, OS_CODE)
 
   return ev;
 }
-
+/**
+ * @brief The system service GetAlarm returns the relative value in tick before the alarm <AlarmID> expires.
+ * @param[in] AlarmID Reference to an alarm
+ * @param[out] Tick Relative value in ticks before the alarm <AlarmID> expires.
+ * @return return the status of the call
+ */ 
 FUNC(StatusType, OS_CODE)
   GetAlarm
 (
@@ -1872,11 +1878,16 @@ FUNC(StatusType, OS_CODE)
   VAR(TickRefType, AUTOMATIC) Tick
 )
 {
-  VAR(StatusType, AUTOMATIC)  ev;
+  VAR(StatusType, AUTOMATIC)  ev; /**< the returned status*/
+  //get a constant pointer to the Kernel descriptor Block
+  // The KDB is the data structure containing the global kernel information.
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
-    p_kdb = osEE_get_kernel();
+    p_kdb = osEE_get_kernel();/** osEE_get_kernel() Returns the pointer to the Kernel descriptor Block*/
+  //get a constant pointer to CDB data structure, which contains the information related to the only core  
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
+// get Core control block from core descriptor block  
+  /** if os does not has ORTI and ERRORHOOK define p_ccb as CONSTP2CONST else define it as CONSTP2VAR */    
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
@@ -1900,27 +1911,33 @@ FUNC(StatusType, OS_CODE)
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetAlarm is callable by Task, ISR2, Error/PreTask/PostTask Hooks */
   if (osEE_check_disableint(p_ccb)) {
+    // check if interrupt is disabled, then set return status to E_OS_DISABLEDINT
     ev = E_OS_DISABLEDINT;
-  } else
+  } else/** check if it is legal to call this service call from the current context, if not return E_OS_CALLEVEL*/
   if (p_ccb->os_context > OSEE_POSTTASKHOOK_CTX)
   {
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
-  if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
+  if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {//check if AlarmID is invalid, then return E_OS_ID
     ev = E_OS_ID;
-  } else
+  } else/*check if the tick is null, return E_OS_PARAM_POINTER status*/
   if (Tick == NULL) {
     ev = E_OS_PARAM_POINTER;
-  } else
+  } else/** if alarm_ID is valid*/
   {
+      // get pointer to the alarm descriptor block with Alarm_ID located in the alarms array inside KDB
     CONSTP2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)
       p_alarm_db = (*p_kdb->p_alarm_ptr_array)[AlarmID];
+      /* osEE_begin_primitive() Called as _first_ function of a primitive that can be called from within
+ * an IRQ and from within a task. */
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-
+    /* get the remaining ticks before alarm expires*/
     ev = osEE_alarm_get(p_alarm_db, Tick);
 
+    /* osEE_end_primitive is Called as _last_ function of a primitive that can be called from
+ * within an IRQ or a task. */
     osEE_end_primitive(flags);
   }
 
