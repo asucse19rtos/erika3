@@ -820,6 +820,7 @@ LOCAL_INLINE FUNC(TickType, OS_CODE)
   return when;
 }
 
+/** calculate ticks between current value and when */
 LOCAL_INLINE FUNC(TickType, OS_CODE)
   osEE_counter_eval_delta
 (
@@ -827,13 +828,13 @@ LOCAL_INLINE FUNC(TickType, OS_CODE)
   VAR(TickType, AUTOMATIC)                        when
 )
 {
-  VAR(TickType, AUTOMATIC) delta;
+  VAR(TickType, AUTOMATIC) delta; /**< ticks between current value and when*/
   CONSTP2CONST(OsEE_CounterCB, AUTOMATIC, OS_APPL_DATA)
     p_counter_cb    = p_counter_db->p_counter_cb;
   CONST(TickType, AUTOMATIC)
     maxallowedvalue = p_counter_db->info.maxallowedvalue;
   CONST(TickType, AUTOMATIC)
-    value           = p_counter_cb->value;
+    value           = p_counter_cb->value;/**< current counter value*/
 
   if (when > value) {
     delta = when - value;
