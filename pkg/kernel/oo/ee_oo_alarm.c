@@ -61,12 +61,16 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC) ev;
+  // get pointer to alarm control block of current alarm DB
   CONSTP2VAR(OsEE_AlarmCB, AUTOMATIC, OS_APPL_DATA)
     p_alarm_cb = osEE_alarm_get_cb(p_alarm_db);
+  // get pointer to trigger descriptor block of current alarm DB
   CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_db = osEE_alarm_get_trigger_db(p_alarm_db);
+  // get pointer to trigger control block
   CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_cb = p_trigger_db->p_trigger_cb;
+  /** if multicore lock the current core that counter is using*/
 #if (!defined(OSEE_SINGLECORE))
   CONST(CoreIdType, AUTOMATIC)
     counter_core_id = p_counter_db->core_id;
@@ -74,7 +78,9 @@ FUNC(StatusType, OS_CODE)
   osEE_lock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
 
+  /** check whether alarm is already in use, return E_OS_STATE*/
   if (p_trigger_cb->status > OSEE_TRIGGER_CANCELED) {
+    /**if not status is inactive or canceled, then alarm is in use*/
     ev = E_OS_STATE;
   } else if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
     p_alarm_cb->cycle = cycle;
@@ -88,7 +94,7 @@ FUNC(StatusType, OS_CODE)
     p_alarm_cb->cycle = cycle;
     /* Turn On the Trigger */
     p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
- 
+    /* insert rel trigger*/
     osEE_counter_insert_rel_trigger(
       p_counter_db, p_trigger_db, increment
     );
