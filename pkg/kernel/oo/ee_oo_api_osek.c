@@ -1269,7 +1269,8 @@ FUNC(StatusType, OS_CODE)
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ReleaseResource);
-    osEE_set_api_param1_num_param(p_ccb, ResID);
+    osEE_set_api_param1_num_param(p_ccb, ResID);  /** param 1 ErrorHook macros - first parameter */
+
     osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
