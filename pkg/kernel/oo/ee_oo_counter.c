@@ -143,14 +143,14 @@ FUNC(void, OS_CODE)
   CONSTP2CONST(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_cb  = p_trigger_db->p_trigger_cb;
   P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-    p_current     = p_counter_cb->trigger_queue;
+    p_current     = p_counter_cb->trigger_queue;/** the trigger list attached to this counter */
 
   if (p_current == p_trigger_db) {
-    /* The trigger to be removed is the first one in the queue */
+    /* The trigger to be removed is the first one in the queue by making the queue points to the next trigger*/
     p_counter_cb->trigger_queue = p_trigger_cb->p_next;
-  } else {
+  } else {/*if not the first one in the queue*/
     P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA) p_previous;
-    do {
+    do {/*iterate the queue till the trigger is found*/
       p_previous = p_current;
       p_current  = p_current->p_trigger_cb->p_next;
     } while ((p_current != NULL) && (p_current != p_trigger_db));
