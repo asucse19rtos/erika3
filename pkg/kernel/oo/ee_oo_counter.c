@@ -53,6 +53,12 @@
 
 #include "ee_internal.h"
 
+/**
+ * insert relative trigger
+ * @param[in] p_counter_db pointer to counter descriptor block
+ * @param[in] p_trigger_db pointer to trigger descriptor block
+ * @param[in] delta number of ticks to fire after
+ */
 FUNC(void, OS_CODE)
   osEE_counter_insert_rel_trigger
 (
@@ -61,6 +67,8 @@ FUNC(void, OS_CODE)
   VAR(TickType, AUTOMATIC)                       delta
 )
 {
+  /** osEE_counter_eval_when: return the value that the counter should fire at*/
+  /** we can now set alarm absolute after calculating the absolute tick that should fire at.*/
   osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_db,
     osEE_counter_eval_when(p_counter_db, delta));
 }
