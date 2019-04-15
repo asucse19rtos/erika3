@@ -836,6 +836,8 @@ typedef struct {
 typedef struct {
 #if (defined(OSEE_HAS_ORTI)) || (defined(OSEE_HAS_STACK_MONITORING))
   /** pointer to the Core HAL Descriptor block (stores info about stacks/...) */
+  /** Core HAL Descriptor Block: stores the list of stacks to be used in case of
+ *  Stack Monitoring or in case of ORTI support */
   VAR(OsEE_CHDB, TYPEDEF)                         chdb;
 #endif /* OSEE_HAS_ORTI || OSEE_HAS_STACK_MONITORING */
   /** pointer to the CCB (holds the RAM part of the information of the core) */
