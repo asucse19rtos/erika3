@@ -107,6 +107,14 @@ FUNC(StatusType, OS_CODE)
   return ev;
 }
 
+/**
+ * @brief set alarm to fire at abs value
+ * @param[in] p_counter_db pointer to counter descriptor block
+ * @param[in] p_alarm_db pointer to alarm descriptor block
+ * @param[in] start start Absolute value in ticks
+ * @param[in] cycle Cycle value in case of cyclic alarm. In case of single alarms, cycle shall be zero.
+ * @return StatusType
+ */
 FUNC(StatusType, OS_CODE)
   osEE_alarm_set_abs
 (
@@ -118,21 +126,22 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC) ev;
   CONSTP2VAR(OsEE_AlarmCB, AUTOMATIC, OS_APPL_DATA)
-    p_alarm_cb = osEE_alarm_get_cb(p_alarm_db);
+    p_alarm_cb = osEE_alarm_get_cb(p_alarm_db); /**< get pointer to alarm control block*/
   CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-    p_trigger_db = osEE_alarm_get_trigger_db(p_alarm_db);
+    p_trigger_db = osEE_alarm_get_trigger_db(p_alarm_db); /**< pointer to trigger descriptor block*/
   CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
-    p_trigger_cb = p_trigger_db->p_trigger_cb;
-#if (!defined(OSEE_SINGLECORE))
+    p_trigger_cb = p_trigger_db->p_trigger_cb;/**< pointer to trigger control block*/
+#if (!defined(OSEE_SINGLECORE))/** if multicore*/
   CONST(CoreIdType, AUTOMATIC)
     counter_core_id = p_counter_db->core_id;
 /* Lock the Core Lock to whom the counter is tied */
   osEE_lock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
 
+  /** check if the trigger status is not inactive or cancelled, which means alarm is in use, then return E_OS_STATE */
   if (p_trigger_cb->status > OSEE_TRIGGER_CANCELED) {
     ev = E_OS_STATE;
-  } else if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
+  } else if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {//if the trigger status is canceled, set when= start and reenable the alarm, and set return status to E_OK
     p_alarm_cb->cycle = cycle;
     /* Re-turn on the trigger, that is in handling, since is handling I'll set
        here 'when' based on start */
@@ -144,7 +153,7 @@ FUNC(StatusType, OS_CODE)
     p_alarm_cb->cycle = cycle;
     /* Turn On the Trigger */
     p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
-
+    /** insert the new trigger in the triggers queue*/
     osEE_counter_insert_abs_trigger(
       p_counter_db, p_trigger_db, start
     );
