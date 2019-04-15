@@ -115,7 +115,15 @@ LOCAL_INLINE FUNC(void, OS_CODE)
   CONST(OSServiceIdType, AUTOMATIC) service_id
 )
 {
+  /** service_id: Last kernel primitive executed on the core */
+  //increment service_id
   p_ccb->service_id = (service_id + 1U);
+  /** The ORTI service ID marks the beginning (enter) and the end (exit) 
+   *  of primitives. This is a flag needed to avoid setting the exit of a 
+   *  primitive which caused a rescheduling. This avoid, for example, that an
+   *  Activatetask/schedule/waitevent/releaseresource/... implementing a 
+   *  preemption sets the last primitive to Activatetask at its exit 
+   *  if there was a rescheduling */
   p_ccb->orti_service_id_valid = OSEE_TRUE;
 }
 
@@ -245,15 +253,20 @@ LOCAL_INLINE FUNC(CoreIdType, OS_CODE)
 }
 #endif /* !OSEE_SINGLECORE */
 
+/* Called as _first_ function of a primitive that can be called from within
+ * an IRQ and from within a task. */
 LOCAL_INLINE FUNC(OsEE_reg, OS_CODE)
   osEE_begin_primitive
 (
   void
 )
 {
+  /** osEE_hal_begin_nested_primitive returns icr.reg*/
   return osEE_hal_begin_nested_primitive();
 }
 
+/* Called as _last_ function of a primitive that can be called from
+ * within an IRQ or a task. */
 LOCAL_INLINE FUNC(void, OS_CODE)
   osEE_end_primitive
 (
@@ -293,6 +306,7 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
 }
 #endif /* OSEE_HAS_RESOURCES */
 
+/** check if interrupts are disabled*/ 
 #if (defined(OSEE_HAS_CHECKS))
 LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   osEE_check_disableint
@@ -300,6 +314,12 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   P2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)  p_ccb
 )
 {
+  /** s_isr_all_cnt: Counter of nested SuspendAllInterrupts()
+   * s_isr_os_cnt: Counter of nested SuspendOSInterrupts()
+   * d_isr_all_cnt: This flag marks whether, at the end of a task, a DisableAllInterrupts()
+   *  was called without a matching call to EnableAllInterrupts()
+   * if any one of them is greter than zero then interrupts are disabled
+   */
   return (p_ccb->s_isr_all_cnt > 0U) || (p_ccb->s_isr_os_cnt > 0U) ||
     (p_ccb->d_isr_all_cnt > 0U);
 }
@@ -782,17 +802,18 @@ LOCAL_INLINE FUNC(TickType, OS_CODE)
   VAR(TickType, AUTOMATIC)                        delta
 )
 {
-  VAR(TickType, AUTOMATIC) when;
+  VAR(TickType, AUTOMATIC) when;/**< the tick value at which counter will expire*/
   CONSTP2CONST(OsEE_CounterCB, AUTOMATIC, OS_APPL_DATA)
     p_counter_cb    = p_counter_db->p_counter_cb;
   CONST(TickType, AUTOMATIC)
     maxallowedvalue = p_counter_db->info.maxallowedvalue;
   CONST(TickType, AUTOMATIC)
-    value           = p_counter_cb->value;
+    value           = p_counter_cb->value;/**< the current counter value*/
 
+  /* if current value + delta <= max allowed value, then "when" is equal to value + delta*/
   if ((maxallowedvalue - delta) >= value) {
     when = value + delta;
-  } else {
+  } else {/* else calculate "when" that will be after counter overflowed*/
     when = delta - (maxallowedvalue - value) - 1U;
   }
 
@@ -855,6 +876,7 @@ FUNC(StatusType, OS_CODE)
   P2VAR(TickType, AUTOMATIC, OS_APPL_DATA)        p_tick
 );
 
+//check whether AlarmID is valid
 LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   osEE_is_valid_alarm_id
 (
@@ -862,10 +884,10 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   VAR(AlarmType, AUTOMATIC)                 alarm_id
 )
 {
-#if (defined(OSEE_API_DYNAMIC))
+#if (defined(OSEE_API_DYNAMIC))/** free_alarm_index: First free ID of the array containing the free pool of alarms.*/
   return (alarm_id < p_kdb->p_kcb->free_alarm_index);
 #else
-  return (alarm_id < p_kdb->alarm_array_size);
+  return (alarm_id < p_kdb->alarm_array_size);/** check that alarm_id is smaller than the number of alarms*/
 #endif /* OSEE_API_DYNAMIC */
 }
 
