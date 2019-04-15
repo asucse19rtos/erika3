@@ -1665,6 +1665,15 @@ FUNC(StatusType, OS_CODE)
   return ev;
 }
 
+/**
+ * The system service occupies the alarm <AlarmID> element.
+ * When <start> ticks are reached, the task assigned to the alarm <AlarmID> is activated or the assigned event (only for
+ * extended tasks) is set or the alarm-callback routine is called.
+ * @param[in] AlarmID Reference to the alarm element
+ * @param[in] start Absolute value in ticks
+ * @param[in] cycle Cycle value in case of cyclic alarm. In case of single alarms, cycle shall be zero.
+ * @return StatusType
+ */
 FUNC(StatusType, OS_CODE)
   SetAbsAlarm
 (
@@ -1673,9 +1682,12 @@ FUNC(StatusType, OS_CODE)
   VAR(TickType,   AUTOMATIC)  cycle
 )
 {
-  VAR(StatusType, AUTOMATIC)  ev;
+  VAR(StatusType, AUTOMATIC)  ev; /**< the returned status*/
+  //get a constant pointer to the Kernel descriptor Block
+  // The KDB is the data structure containing the global kernel information.
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
-    p_kdb = osEE_get_kernel();
+    p_kdb = osEE_get_kernel();/** osEE_get_kernel() Returns the pointer to the Kernel descriptor Block*/
+  //get a constant pointer to CDB data structure, which contains the information related to the only core available.
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
@@ -1700,25 +1712,33 @@ FUNC(StatusType, OS_CODE)
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* SetAbsAlarm is callable by Task and ISR2 */
+  // check if interrupt is disabled, then set return status to E_OS_DISABLEDINT
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
-  } else
+  } else/** check if it is legal to call this service call from the current context, if not return E_OS_CALLEVEL*/
   if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
   {
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
-  if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
+  if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {//check if AlarmID is invalid, then return E_OS_ID
     ev = E_OS_ID;
-  } else
+  } else/** if alarm_ID is valid*/
   {
+    // get pointer to the alarm descriptor block with Alarm_ID located in the alarms array inside KDB 
     CONSTP2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)
       p_alarm_db = (*p_kdb->p_alarm_ptr_array)[AlarmID];
+    // get pointer to the counter descriptor block of the current alarm
     CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
       p_counter_db = osEE_alarm_get_trigger_db(p_alarm_db)->p_counter_db;
 
 #if (defined(OSEE_HAS_CHECKS))
     /* SWS_Os_00304 */
+    /** check if the Value of <start> outside of the admissible counter limit (less
+      than zero or greater than maxallowedvalue)
+    * OR cycle value not equal to zero and is below min value or more than max value, then
+    * return E_OS_VALUE
+    */
     if ((start > p_counter_db->info.maxallowedvalue) ||
         ((cycle != 0U) && ((cycle < p_counter_db->info.mincycle) ||
           (cycle > p_counter_db->info.maxallowedvalue)))
@@ -1728,11 +1748,16 @@ FUNC(StatusType, OS_CODE)
     } else
 #endif /* OSEE_HAS_CHECKS */
     {
+      // OsEE_reg is a register data type
+      /* osEE_begin_primitive() Called as _first_ function of a primitive that can be called from within
+ * an IRQ and from within a task. */
       CONST(OsEE_reg, AUTOMATIC)
         flags = osEE_begin_primitive();
-
+      /** set the alarm to fire at the value start*/
       ev = osEE_alarm_set_abs(p_counter_db, p_alarm_db, start, cycle);
 
+      /* osEE_end_primitive is Called as _last_ function of a primitive that can be called from
+ * within an IRQ or a task. */
       osEE_end_primitive(flags);
     }
   }
