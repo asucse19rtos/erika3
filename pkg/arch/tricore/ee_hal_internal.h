@@ -256,12 +256,14 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE OsEE_icr OSEE_ALWAYS_INLINE osEE_tc_get_icr(void)
 {
   OsEE_icr icr;
+  // OSEE_CSFR_ICR is the Interrupt Control Register
   icr.reg = osEE_tc_get_csfr(OSEE_CSFR_ICR);
   return icr;
 }
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_icr(OsEE_icr icr)
 {
+  // OSEE_CSFR_ICR is the Interrupt Control Register
   osEE_tc_set_csfr(OSEE_CSFR_ICR, icr.reg);
 }
 
@@ -360,8 +362,11 @@ OSEE_STATIC_INLINE MemSize OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
   osEE_hal_begin_nested_primitive(void)
 {
+  /** OsEE_icr Interrupt control register data type */
+  // get the ICR register
   OsEE_icr icr = osEE_tc_get_icr();
 
+  /** ccpn: Current CPU Priority Number*/
   if (icr.bits.ccpn < OSEE_ISR2_MAX_HW_PRIO) {
     OsEE_icr icr_temp = icr;
     /* Set new CCPN value */
