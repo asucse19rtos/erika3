@@ -619,15 +619,15 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)                      ev;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel(); // get kernel discribtor block (kernel_types.h line 963)
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
-    p_cdb = osEE_get_curr_core();
+    p_cdb = osEE_get_curr_core(); // get core discribtor block (kernel_types.h line 836)
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
-    p_ccb = p_cdb->p_ccb;
+    p_ccb = p_cdb->p_ccb; // get core control block (kernel_types.h line 729)
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ActivateTask);
   osEE_stack_monitoring(p_cdb);
@@ -645,7 +645,7 @@ FUNC(StatusType, OS_CODE)
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* ActivateTask is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
-    ev = E_OS_DISABLEDINT;
+    ev = E_OS_DISABLEDINT; 
   } else
   if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
   {
@@ -657,15 +657,17 @@ FUNC(StatusType, OS_CODE)
   } else
   {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-      p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];
+      p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];  // get task discribtor block (kernel_types.h line 264)
+      //p_tdb_ptr_array array of pointers contain poniters to task discribtor block of each task 
+      //Rt-druid gives a task a number as its id in order of the tasks declaration
 
     if (p_tdb_act->task_type <= OSEE_TASK_TYPE_EXTENDED) {
       CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
 
-      ev = osEE_task_activated(p_tdb_act);
+      ev = osEE_task_activated(p_tdb_act); // activate task and check maximum number of activations
 
       if (ev == E_OK) {
-        (void)osEE_scheduler_task_activated(p_kdb, p_tdb_act);
+        (void)osEE_scheduler_task_activated(p_kdb, p_tdb_act);  // scheduling the task
       }
 
       osEE_end_primitive(flags);
@@ -679,8 +681,8 @@ FUNC(StatusType, OS_CODE)
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ActivateTask);
-    osEE_set_api_param1_num_param(p_ccb, TaskID);
-    osEE_call_error_hook(p_ccb, ev);
+    osEE_set_api_param1_num_param(p_ccb, TaskID); // Id of the task caused the error
+    osEE_call_error_hook(p_ccb, ev);  //call the error hook defined by the user
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -710,7 +712,7 @@ FUNC(StatusType, OS_CODE)
           OSEE_HAS_SERVICE_PROTECTION */
     p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
-    p_curr = p_ccb->p_curr;
+    p_curr = p_ccb->p_curr; //get the task discribtor block of the current task that will be terminated
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ChainTask);
   osEE_stack_monitoring(p_cdb);
@@ -733,25 +735,26 @@ FUNC(StatusType, OS_CODE)
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
 #if (defined(OSEE_HAS_CHECKS))
-  if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED)
+  if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED) // chain task is allowed only in tasks not ISR
+  //task type (api_types.h line 325)
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-      || (p_ccb->os_context > OSEE_TASK_CTX)
+      || (p_ccb->os_context > OSEE_TASK_CTX)  
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
   )
   {
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_CHECKS */
-  if (!osEE_is_valid_tid(p_kdb, TaskID)) {
+  if (!osEE_is_valid_tid(p_kdb, TaskID)) {  //check if task id is valid 
     ev = E_OS_ID;
   } else {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-      p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];
+      p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID]; //get the task discribtor block of the task to be activated
 #if (defined(OSEE_HAS_CHECKS))
 #if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
     CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
-      p_curr_tcb  = p_curr->p_tcb;
-    if (p_curr_tcb->p_last_m != NULL) {
+      p_curr_tcb  = p_curr->p_tcb; //get task control block of the current task to be terminated
+    if (p_curr_tcb->p_last_m != NULL) {   // check if the task has resources or spinlocks
 #if (defined(OSEE_HAS_RESOURCES))
 #if (defined(OSEE_HAS_SPINLOCKS))
       if (p_curr_tcb->p_last_m->m_type == OSEE_M_RESOURCE) {
@@ -784,7 +787,7 @@ FUNC(StatusType, OS_CODE)
 
       flags = osEE_begin_primitive();
 
-      if (p_tdb_act == p_curr) {
+      if (p_tdb_act == p_curr) {   // check if the current task is the task to be activated
         /* If the Task chain on it self, flag it. */
         p_tdb_act->p_tcb->status = OSEE_TASK_CHAINED;
         ev = E_OK;
@@ -796,8 +799,8 @@ FUNC(StatusType, OS_CODE)
       }
       if (ev == E_OK) {
         /* The following do not return! */
-        osEE_hal_terminate_activation(&osEE_get_curr_task()->hdb,
-          OSEE_KERNEL_TERMINATE_ACTIVATION_CB);
+        osEE_hal_terminate_activation(&osEE_get_curr_task()->hdb,  
+          OSEE_KERNEL_TERMINATE_ACTIVATION_CB); //terminate the current task
       }
       osEE_end_primitive(flags);
     } else {
