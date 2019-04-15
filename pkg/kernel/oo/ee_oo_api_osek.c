@@ -56,21 +56,7 @@
    DisableAllInterrupts(), EnableAllInterrupts(), SuspendAllInterrupts(),
    ResumeAllInterrupts() prior to calling StartOS() and after calling
    ShutdownOS(). (SRS_Os_11018) */
-/**
- *\code
- * CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core() "this line gets the pointer "test" " ;
- * CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
- * Disable Immediately for Atomicity 
- * osEE_hal_disableIRQ();
- *
- * osEE_stack_monitoring(p_cdb);
- *
- * osEE_orti_trace_service_entry(p_ccb, OSServiceId_DisableAllInterrupts);
- * p_ccb->d_isr_all_cnt = 1U;
- * osEE_orti_trace_service_exit(p_ccb, OSServiceId_DisableAllInterrupts);
- * return;
- *\encode
- */
+
 FUNC(void, OS_CODE)
   DisableAllInterrupts
 (
