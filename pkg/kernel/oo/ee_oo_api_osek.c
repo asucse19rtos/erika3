@@ -1055,27 +1055,27 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   GetResource
 (
-  VAR(ResourceType, AUTOMATIC) ResID
+  VAR(ResourceType, AUTOMATIC) ResID           				                  // each resources has an id
 )
 {
-  VAR(StatusType, AUTOMATIC)                      ev;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
+  VAR(StatusType, AUTOMATIC)                      ev;                                     // the return
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();              // kernel descriptor block
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
-    p_cdb = osEE_get_curr_core();
-#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
-  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+    p_cdb = osEE_get_curr_core();                                                         //  pointer core descriptor block
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))                           //  !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK 
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)                                         //   
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
-    p_ccb = p_cdb->p_ccb;
+    p_ccb = p_cdb->p_ccb;                                                                 // Holds the ram part of the information of the core "pointer  core control block"
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
-    p_curr = p_ccb->p_curr;
+    p_curr = p_ccb->p_curr;                                                               // current running task or ISR2 
 
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetResource);
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetResource);                          // start orti
 
-  osEE_stack_monitoring(p_cdb);
+  osEE_stack_monitoring(p_cdb);                                                           // monitors the stack in the core database block . 
 
-#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))                                                // check if there is a protection and there is here
   /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
    *    the Task/OsIsr calls any OS service (excluding the interrupt services)
    *    then the Operating System shall ignore the service AND shall return
@@ -1087,80 +1087,82 @@ FUNC(StatusType, OS_CODE)
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetResource is callable by Task and ISR2 */
-  if (osEE_check_disableint(p_ccb)) {
-    ev = E_OS_DISABLEDINT;
+  if (osEE_check_disableint(p_ccb)) {                                                // check  if the interrupts are disabled/suspended
+    ev = E_OS_DISABLEDINT;                                                           // a service of os is called inside interrupt disable / enable pair
   } else
-  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
-  {
-    ev = E_OS_CALLEVEL;
+  if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)                                        // check if u called from the right places "allowed to call from"
+  {                                                                                  // if OSEE_TASK_ISR2_CTX is 1 then u are either a task or an isr2
+    ev = E_OS_CALLEVEL;                                                              // error type : called in the wrong context
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
-  if (!osEE_is_valid_res_id(p_kdb, ResID)) {
-    ev = E_OS_ID;
+  if (!osEE_is_valid_res_id(p_kdb, ResID)) {                                          // check if resource really exists
+    ev = E_OS_ID;                                                                     //the resource id is invalid
   } else
-  {
-    CONSTP2VAR(OsEE_ResourceDB, AUTOMATIC, OS_APPL_CONST)
-      p_reso_db     = (*p_kdb->p_res_ptr_array)[ResID];
+  {                                                            // start else    where the task takes the resources with some exceptions                         
+    CONSTP2VAR(OsEE_ResourceDB, AUTOMATIC, OS_APPL_CONST)                              // getting data about task and resource
+      p_reso_db     = (*p_kdb->p_res_ptr_array)[ResID];                               // getting "resource descriptor block"  [data about resources that is given] 
     CONSTP2VAR(OsEE_ResourceCB, AUTOMATIC, OS_APPL_DATA)
-      p_reso_cb     = p_reso_db->p_cb;
+      p_reso_cb     = p_reso_db->p_cb;                                                // getting resource control block
     CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
-      p_curr_tcb    = p_curr->p_tcb;
+      p_curr_tcb    = p_curr->p_tcb;                                                  // getting current "task control block"
     CONST(TaskPrio, AUTOMATIC)
-      reso_prio     = p_reso_db->prio;
+      reso_prio     = p_reso_db->prio;                                                // getting "resource priority"
     CONST(TaskPrio, AUTOMATIC)
-      current_prio  = p_curr_tcb->current_prio;
+      current_prio  = p_curr_tcb->current_prio;                                       // geting current priority of current task
     VAR(OsEE_reg, AUTOMATIC)
-      flags         = osEE_begin_primitive();
+      flags         = osEE_begin_primitive();                                         //    start flags   
 #if (defined(OSEE_HAS_CHECKS))
-    if ((p_reso_cb->p_owner != NULL) ||
-        (p_curr->ready_prio > reso_prio))
+    if ((p_reso_cb->p_owner != NULL) ||                                               // if somebody is holding the resource
+        (p_curr->ready_prio > reso_prio))                                             //or if current resource priority is less than that of current task priorty 
     {
-      osEE_end_primitive(flags);
+      osEE_end_primitive(flags);                                                      // end flags
 
-      ev = E_OS_ACCESS;
+      ev = E_OS_ACCESS;                                                              // refuse to give the resource "denied access"
     } else
-#if (!defined(OSEE_SINGLECORE))
-    if ((p_reso_db->allowed_core_mask &
+#if (!defined(OSEE_SINGLECORE))                                                     // if mulitcore
+    if ((p_reso_db->allowed_core_mask &                                             // if resource allowed core mask ..
         ((CoreMaskType)1U << osEE_get_curr_core_id())) == 0U)
     {
       osEE_end_primitive(flags);
-
-      ev = E_OS_CORE;
-    } else
-#endif /* !OSEE_SINGLECORE */
-#endif /* OSEE_HAS_CHECKS */
+    									/*All functions that are not allowed to operate cross core
+    									shall return E_OS_CORE in extended status if called with parameters that
+    											require a cross core operation.*/
+      ev = E_OS_CORE;                                                               
+    } else                                                      // start else 2 where the task takes the resources 
+#endif /* !OSEE_SINGLECORE */                                 
+#endif /* OSEE_HAS_CHECKS */                                                      // if has checks 
     {
-      if (current_prio < reso_prio) {
-        p_curr_tcb->current_prio = reso_prio;
-        flags = osEE_hal_prepare_ipl(flags, reso_prio);
+      if (current_prio < reso_prio) {                                              // if task priorty less than resource prioty
+        p_curr_tcb->current_prio = reso_prio;                                       // task priorty = resource priorty
+        flags = osEE_hal_prepare_ipl(flags, reso_prio);                            // flag
       }
 
-      p_reso_cb->p_owner    = p_curr;
+      p_reso_cb->p_owner    = p_curr;                                            // in here the task takes the resource
 
       osEE_end_primitive(flags);
 
-      p_reso_cb->p_next     = p_curr_tcb->p_last_m;
-      p_reso_cb->prev_prio  = current_prio;
-      p_curr_tcb->p_last_m  = p_reso_db;
+      p_reso_cb->p_next     = p_curr_tcb->p_last_m;                                     //here it saves the next resource priorty as the task priorty
+      p_reso_cb->prev_prio  = current_prio;                                             //here it saves the prev.resource priorty as the old priorty
+      p_curr_tcb->p_last_m  = p_reso_db;                                                //here the task saves that he has this resource
 
       ev = E_OK;
-    }
-  }
+    }                                                            // end else 2
+  }                                                              // end else
 
-#if (defined(OSEE_HAS_ERRORHOOK))
-  if (ev != E_OK) {
-    CONST(OsEE_reg, AUTOMATIC)
-      flags = osEE_begin_primitive();
+#if (defined(OSEE_HAS_ERRORHOOK))                                 // if there is error hook "OSEE_HAS_ERRORHOOK"
+  if (ev != E_OK) {                                               // if there is an error of any kind or if there is a task refused the resource
+    CONST(OsEE_reg, AUTOMATIC)    
+      flags = osEE_begin_primitive();                             // get flags
     osEE_set_service_id(p_ccb, OSServiceId_GetResource);
     osEE_set_api_param1_num_param(p_ccb, ResID);
     osEE_call_error_hook(p_ccb, ev);
-    osEE_end_primitive(flags);
+    osEE_end_primitive(flags);                                    // end flags
   }
 #endif /* OSEE_HAS_ERRORHOOK */
 
-  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetResource);
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_GetResource);//stop the orti trace
 
-  return ev;
+  return ev;// the return should be E_OK "done" or E_OS_ID " the resource id is invalid" or E_OS_ACCESS " trying to get a resource that is already in use"
 }
 
 FUNC(StatusType, OS_CODE)
