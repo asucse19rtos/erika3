@@ -72,7 +72,7 @@ FUNC(void, OS_CODE)
   osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_db,
     osEE_counter_eval_when(p_counter_db, delta));
 }
-
+/** insert the new trigger in the queue*/
 FUNC(void, OS_CODE)
   osEE_counter_insert_abs_trigger
 (
@@ -82,22 +82,24 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_CounterCB, AUTOMATIC, OS_APPL_DATA)
-    p_counter_cb  = p_counter_db->p_counter_cb;
+    p_counter_cb  = p_counter_db->p_counter_cb;/**< pointer to counter control block*/
   P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-    p_previous    = NULL;
+    p_previous    = NULL;/**< pointer to previous trigger descriptor block and initialize it to NULL*/
   P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-    p_current     = p_counter_cb->trigger_queue;
+    p_current     = p_counter_cb->trigger_queue;/**< pointer to current trigger DB and initialize it to the first one in the trigger queue*/
   CONST(TickType, AUTOMATIC)
-    counter_value = p_counter_cb->value;
+    counter_value = p_counter_cb->value;/**< current counter value*/
   VAR(OsEE_bool, AUTOMATIC)
-    work_not_done = OSEE_TRUE;
+    work_not_done = OSEE_TRUE;/**< boolean that work is not done yet*/
 
   /* Update Trigger Status */
   p_trigger_db->p_trigger_cb->when   = when;
 
+  /* iterate till current equal NULL and work is finished */
   while ((p_current != NULL) && work_not_done) {
-    CONST(TickType, AUTOMATIC) current_when = p_current->p_trigger_cb->when;
+    CONST(TickType, AUTOMATIC) current_when = p_current->p_trigger_cb->when;/**< current when value and initialize it to the when of the first one in the queue*/
 
+    //if current when is greater than current counter value
     if (current_when > counter_value) {
       /* "Current" belong to this counter-loop */
       if ((when >= current_when) || (when <= counter_value)) {
@@ -105,7 +107,7 @@ FUNC(void, OS_CODE)
            (when <= counter_value) => "New" in next loop. */
         p_previous  = p_current;
         p_current   = p_current->p_trigger_cb->p_next;
-      } else {
+      } else {/* when is smaller than current_when*/
         work_not_done = OSEE_FALSE;
       }
     } else {
@@ -123,11 +125,13 @@ FUNC(void, OS_CODE)
   }
 
   if (p_previous != NULL) {
+    /* meanse that we have entered the while loop, and we should put the new trigger between the previous and next trigger*/
     p_previous->p_trigger_cb->p_next  = p_trigger_db;
   } else {
+    /* if previous = NULL, means that we did not enter while loop and we will put the new trigger at the start of the queue*/
     p_counter_cb->trigger_queue       = p_trigger_db;
   }
-
+  /* set the next trigger to the new one is the current reached trigger*/
   p_trigger_db->p_trigger_cb->p_next = p_current;
 }
 
