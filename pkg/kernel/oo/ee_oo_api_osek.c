@@ -1754,18 +1754,27 @@ FUNC(StatusType, OS_CODE)
 
   return ev;
 }
-
+/**
+ * @brief The system service cancels the alarm <AlarmID>.
+ * @param[in] AlarmID Reference to an alarm
+ * @return return the status of the call
+ */
 FUNC(StatusType, OS_CODE)
   CancelAlarm
 (
   VAR(AlarmType, AUTOMATIC) AlarmID
 )
 {
-  VAR(StatusType, AUTOMATIC)  ev;
+  VAR(StatusType, AUTOMATIC)  ev; /**< the returned status*/
+  //get a constant pointer to the Kernel descriptor Block
+  // The KDB is the data structure containing the global kernel information.
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
-    p_kdb = osEE_get_kernel();
+    p_kdb = osEE_get_kernel();/** osEE_get_kernel() Returns the pointer to the Kernel descriptor Block*/
+  //get a constant pointer to CDB data structure, which contains the information related to the only core available.
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
+    // get Core control block from core descriptor block  
+  /** if os does not has ORTI and ERRORHOOK define p_ccb as CONSTP2CONST else define it as CONSTP2VAR */
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
@@ -1790,22 +1799,28 @@ FUNC(StatusType, OS_CODE)
 /* CancelAlarm is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
-  } else
+  } else/** check if it is legal to call this service call from the current context, if not return E_OS_CALLEVEL*/
   if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
   {
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
-  if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
+  if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {//check if AlarmID is invalid, then return E_OS_ID
     ev = E_OS_ID;
-  } else {
+  } else {/** if alarm_ID is valid*/
+  // get pointer to the alarm descriptor block with Alarm_ID located in the alarms array inside KDB
     CONSTP2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)
       p_alarm_db  = (*p_kdb->p_alarm_ptr_array)[AlarmID];
+     // OsEE_reg is a register data type
+      /* osEE_begin_primitive() Called as _first_ function of a primitive that can be called from within
+ * an IRQ and from within a task. */  
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-
+    /**cancel the alarm and return the resultant status*/
     ev = osEE_alarm_cancel(p_alarm_db);
-
+    
+      /* osEE_end_primitive is Called as _last_ function of a primitive that can be called from
+ * within an IRQ or a task. */
     osEE_end_primitive(flags);
   }
 
