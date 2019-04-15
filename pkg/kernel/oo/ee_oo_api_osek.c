@@ -1957,7 +1957,12 @@ FUNC(StatusType, OS_CODE)
 
   return ev;
 }
-
+/**
+ * @brief The system service GetAlarmBase reads the alarm base characteristics.
+ * @param[in] AlarmID Reference to alarm
+ * @param[out] Info Reference to structure with constants of the alarm base.
+ * @return return the status of the call
+ */ 
 FUNC(StatusType, OS_CODE)
   GetAlarmBase
 (
@@ -1965,11 +1970,16 @@ FUNC(StatusType, OS_CODE)
   VAR(AlarmBaseRefType, AUTOMATIC)  Info
 )
 {
-  VAR(StatusType, AUTOMATIC)  ev;
+  VAR(StatusType, AUTOMATIC)  ev; /**< the returned status*/
+  //get a constant pointer to the Kernel descriptor Block
+  // The KDB is the data structure containing the global kernel information.
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA)
-    p_kdb = osEE_get_kernel();
+    p_kdb = osEE_get_kernel();/** osEE_get_kernel() Returns the pointer to the Kernel descriptor Block*/
+  //get a constant pointer to CDB data structure, which contains the information related to the only core
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
+    // get Core control block from core descriptor block  
+  /** if os does not has ORTI and ERRORHOOK define p_ccb as CONSTP2CONST else define it as CONSTP2VAR */
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
@@ -1993,6 +2003,7 @@ FUNC(StatusType, OS_CODE)
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetAlarmBase is callable by Task, ISR2, Error/PreTask/PostTask Hooks */
   if (osEE_check_disableint(p_ccb)) {
+    // check if interrupt is disabled, then set return status to E_OS_DISABLEDINT
     ev = E_OS_DISABLEDINT;
   } else
   if (p_ccb->os_context > OSEE_POSTTASKHOOK_CTX)
@@ -2000,22 +2011,23 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
-  if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {
+  if (!osEE_is_valid_alarm_id(p_kdb, AlarmID)) {//check if AlarmID is invalid, then return E_OS_ID
     ev = E_OS_ID;
-  } else
+  } else/*check if the info is null, return E_OS_PARAM_POINTER status*/
   if (Info == NULL) {
     ev = E_OS_PARAM_POINTER;
-  } else
+  } else/** if alarm_ID is valid*/
   {
+          // get pointer to the alarm descriptor block with Alarm_ID located in the alarms array inside KDB
     CONSTP2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)
       p_alarm_db = (*p_kdb->p_alarm_ptr_array)[AlarmID];
     CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-      p_trigger_db = osEE_alarm_get_trigger_db(p_alarm_db);
+      p_trigger_db = osEE_alarm_get_trigger_db(p_alarm_db);/**< pointer to trigger descriptor block*/
     CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
-      p_counter_db = p_trigger_db->p_counter_db;
-
+      p_counter_db = p_trigger_db->p_counter_db;/**<pointer to counter descriptor block*/
+    // access the counter info
     *Info = p_counter_db->info;
-
+    // return E_OK status
     ev = E_OK;
   }
 
