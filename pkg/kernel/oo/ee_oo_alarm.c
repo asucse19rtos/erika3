@@ -157,36 +157,51 @@ FUNC(StatusType, OS_CODE)
   return ev;
 }
 
+/**
+ * brief cancel an alarm
+ * param[in] p_alarm_db pointer to the alarm descriptor block
+ * @return status of the call
+ */
 FUNC(StatusType, OS_CODE)
   osEE_alarm_cancel
 (
   P2VAR(OsEE_AlarmDB, AUTOMATIC, OS_APPL_DATA)    p_alarm_db
 )
 {
-  VAR(StatusType, AUTOMATIC) ev;
+  VAR(StatusType, AUTOMATIC) ev;/**< statustype that will be returned*/
+  //get pointer to trigger descriptor block
   CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_db = osEE_alarm_get_trigger_db(p_alarm_db);
+  //get pointer to trigger control block
   CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_cb = p_trigger_db->p_trigger_cb;
+  //get pointer to counter descriptor block
   CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
     p_counter_db = p_trigger_db->p_counter_db;
 #if (!defined(OSEE_SINGLECORE))
+//get core id and lock it
   CONST(CoreIdType, AUTOMATIC)
     counter_core_id = p_counter_db->core_id;
 /* Lock the Core Lock to whom the counter is tied */
   osEE_lock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
 
+  /*check whether the alarm is already canceled or inactive, if so return E_OS_NOFUNC status*/
   if (p_trigger_cb->status <= OSEE_TRIGGER_CANCELED) {
     ev = E_OS_NOFUNC;
-  } else if (p_trigger_cb->status >= OSEE_TRIGGER_EXPIRED) {
+  } 
+  /*if the alarm status is expired or reenabled, set it's status canceled and return E_OK*/
+  else if (p_trigger_cb->status >= OSEE_TRIGGER_EXPIRED) {
     p_trigger_cb->status = OSEE_TRIGGER_CANCELED;
     ev = E_OK;
-  } else {
+  } 
+  /*if the status is inactive cancel the counter and return E_OK status*/
+  else {
     p_trigger_cb->status = OSEE_TRIGGER_INACTIVE;
     osEE_counter_cancel_trigger(p_counter_db, p_trigger_db);
     ev = E_OK;
   }
+  //unlock current core
 #if (!defined(OSEE_SINGLECORE))
   osEE_unlock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
