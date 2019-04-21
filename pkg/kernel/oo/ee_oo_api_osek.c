@@ -580,27 +580,29 @@ FUNC(StatusType, OS_CODE)
 
   return ev;
 }
-
+/**
+ * @brief This service returns the current application mode. It may be used to write mode dependent code.
+  **/ 
 FUNC(AppModeType, OS_CODE)
   GetActiveApplicationMode
 (
   void
 )
 {
-  VAR(AppModeType, AUTOMATIC) app_mode;
+  VAR(AppModeType, AUTOMATIC) app_mode; /**< returned application mode*/
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
-    p_cdb = osEE_get_curr_core();
+    p_cdb = osEE_get_curr_core();/**<core descriptor block*/
 #if (!defined(OSEE_HAS_ORTI))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI */
-    p_ccb = p_cdb->p_ccb;
+    p_ccb = p_cdb->p_ccb;/**< core control block*/
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetActiveApplicationMode);
 
   osEE_stack_monitoring(p_cdb);
-
+  /* if not uninitialized or initialized states */
   if (p_ccb->os_status >= OSEE_KERNEL_STARTING) {
     app_mode = p_ccb->app_mode;
   } else {
