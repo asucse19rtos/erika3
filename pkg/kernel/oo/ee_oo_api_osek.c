@@ -64,17 +64,20 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  /** p_cdb pointer to the Core Descriptor Block (The struct stores all
+   *  the information related to the handling of a core in Flash) */
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
-    /** p_ccb pointer to the CCB (holds the RAM part of the information of the core) */
+  /** p_ccb pointer to the Core Control Block (The struct stores all
+   *  the information related to the handling of a core in RAM) */
 
   /* Disable Immediately for Atomicity */
-  osEE_hal_disableIRQ();
+  osEE_hal_disableIRQ(); /* Disable interrupts in the Hardware Abstraction layer */
 
   osEE_stack_monitoring(p_cdb);
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_DisableAllInterrupts);
-  p_ccb->d_isr_all_cnt = 1U;
-   /** This flag marks whether, at the end of a task, a DisableAllInterrupts()
+  p_ccb->d_isr_all_cnt = 1U; /* Sets flag to 1, indicates interrupts disabled. */
+  /** This flag marks whether, at the end of a task, a DisableAllInterrupts()
    *  was called without a matching call to EnableAllInterrupts() */
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_DisableAllInterrupts);
   return;
@@ -92,15 +95,19 @@ FUNC(void, OS_CODE)
    * Operating System module shall not perform this Operating System service.
    * (SRS_Os_11009) */
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  /** p_cdb pointer to the Core Descriptor Block (The struct stores all
+   *  the information related to the handling of a core in Flash) */
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
-
+  /** p_ccb pointer to the Core Control Block (The struct stores all
+   *  the information related to the handling of a core in RAM) */
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_EnableAllInterrupts);
 
   osEE_stack_monitoring(p_cdb);
-
+  /* d_isr_all_cnt: Checks if the counter is greater than 0, refers to 
+   * a DisableAllInterrupts call. Sets the counter to 0. */
   if (p_ccb->d_isr_all_cnt > 0U) {
     p_ccb->d_isr_all_cnt = 0U;
-    osEE_hal_enableIRQ();
+    osEE_hal_enableIRQ(); /* Enable interrupts in the Hardware Abstraction layer */
   }
 
   osEE_orti_trace_service_exit(p_ccb, OSServiceId_EnableAllInterrupts);
@@ -116,14 +123,15 @@ static FUNC(void, OS_CODE)
 )
 {
   if (p_ccb->s_isr_all_cnt == 0U) {
-  	  /** Counter of nested SuspendOSInterrupts() */
-
+    /** s_isr_all_cnt: Counter of nested SuspendAllInterrupts() */
+    /* Suspend interrupts in the Hardware Abstraction layer and saves the status register*/
     CONST(OsEE_reg, AUTOMATIC) flags = osEE_hal_suspendIRQ();
+    /** prev_s_isr_all_status: Interrupt status saved by SuspendAllInterrupts() */
     p_ccb->prev_s_isr_all_status = flags;
-    ++p_ccb->s_isr_all_cnt;
+    ++p_ccb->s_isr_all_cnt; /* increment counter by 1 for first call of SuspendAllInterrupts() */
 
-  } else if (p_ccb->s_isr_all_cnt < OSEE_MAX_BYTE) {-
-    ++p_ccb->s_isr_all_cnt;
+  } else if (p_ccb->s_isr_all_cnt < OSEE_MAX_BYTE) {
+    ++p_ccb->s_isr_all_cnt; /* increment counter by 1 for each call of SuspendAllInterrupts()*/
   } else {
 #if (defined(OSEE_HAS_PROTECTIONHOOK))
 #error Add ProtectionHook call here once it has been implemented
@@ -140,8 +148,11 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  /** p_cdb pointer to the Core Descriptor Block (The struct stores all
+   *  the information related to the handling of a core in Flash) */
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
-
+  /** p_ccb pointer to the Core Control Block (The struct stores all
+   *  the information related to the handling of a core in RAM) */
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SuspendAllInterrupts);
 
   osEE_stack_monitoring(p_cdb);
@@ -160,17 +171,20 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  /** p_cdb pointer to the Core Descriptor Block (The struct stores all
+   *  the information related to the handling of a core in Flash) */
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
-
+  /** p_ccb pointer to the Core Control Block (The struct stores all
+   *  the information related to the handling of a core in RAM) */
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ResumeAllInterrupts);
 
   osEE_stack_monitoring(p_cdb);
-
+  /** s_isr_all_cnt: Counter of nested SuspendAllInterrupts() */
   if (p_ccb->s_isr_all_cnt > 0U) {
-    --p_ccb->s_isr_all_cnt;
-
+    --p_ccb->s_isr_all_cnt; /* decrement counter until = 0 */
+    
     if (p_ccb->s_isr_all_cnt == 0U) {
-      osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status);
+      osEE_hal_resumeIRQ(p_ccb->prev_s_isr_all_status); /* Resume interrupts in the Hardware Abstraction layer */
     }
   }
 
@@ -186,18 +200,24 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  /** p_cdb pointer to the Core Descriptor Block (The struct stores all
+   *  the information related to the handling of a core in Flash) */
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
-
+  /** p_ccb pointer to the Core Control Block (The struct stores all
+   *  the information related to the handling of a core in RAM) */
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SuspendOSInterrupts);
 
   osEE_stack_monitoring(p_cdb);
 
   if (p_ccb->s_isr_os_cnt == 0U) {
-    CONST(OsEE_reg, AUTOMATIC) flags = osEE_hal_begin_nested_primitive();
-    p_ccb->prev_s_isr_os_status = flags;
-    ++p_ccb->s_isr_os_cnt;
+    /** s_isr_all_cnt: Counter of nested SuspendOSInterrupts() */
+    /* Saves the recognition status of interrupts of category 2 and disables the recognition
+     of these interrupts. To protect a critical section of code from interruptions of any kind.*/
+    CONST(OsEE_reg, AUTOMATIC) flags = osEE_hal_begin_nested_primitive(); 
+    p_ccb->prev_s_isr_os_status = flags; /** prev_s_isr_os_status: Interrupt status saved by SuspendOSInterrupts() */
+    ++p_ccb->s_isr_os_cnt; /* increment counter by 1 for first call of SuspendOSInterrupts() */
   } else if (p_ccb->s_isr_os_cnt < OSEE_MAX_BYTE) {
-    ++p_ccb->s_isr_os_cnt;
+    ++p_ccb->s_isr_os_cnt; /* increment counter by 1 for each call of SuspendOSInterrupts()*/
   } else {
 #if (defined(OSEE_HAS_PROTECTIONHOOK))
 #error Add ProtectionHook call here once it has been implemented
@@ -218,16 +238,20 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
+  /** p_cdb pointer to the Core Descriptor Block (The struct stores all
+   *  the information related to the handling of a core in Flash) */
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
-
+  /** p_ccb pointer to the Core Control Block (The struct stores all
+   *  the information related to the handling of a core in RAM) */
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ResumeOSInterrupts);
 
   osEE_stack_monitoring(p_cdb);
-
+  /** s_isr_all_cnt: Counter of nested SuspendOSInterrupts() */
   if (p_ccb->s_isr_os_cnt > 0U) {
-    --p_ccb->s_isr_os_cnt;
+    --p_ccb->s_isr_os_cnt; /* decrement counter until = 0 */
 
     if (p_ccb->s_isr_os_cnt == 0U) {
+      /* Restores the recognition status of interrupts saved by the SuspendOSInterrupts service.*/
       osEE_hal_end_nested_primitive(p_ccb->prev_s_isr_os_status);
     }
   }
@@ -3448,11 +3472,14 @@ FUNC(ISRType, OS_CODE)
   VAR(ISRType, AUTOMATIC) isr_id;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
     p_tdb = osEE_get_curr_task();
-
+    /** p_tdb pointer to the Task Descriptor Block (It stores all the
+     *  information related to the task that is configured statically) */
+  /* Checks if current running task type is ISR2 */
   if (p_tdb->task_type == OSEE_TASK_TYPE_ISR2) {
-    isr_id = p_tdb->tid;
+    /** tid: Task ID. it is a number, allocated one per task by RT-Druid */
+    isr_id = p_tdb->tid; 
   } else {
-    isr_id = INVALID_ISR;
+    isr_id = INVALID_ISR; /* returns INVALID_ISR if task is not ISR2 */
   }
 
   return isr_id;
