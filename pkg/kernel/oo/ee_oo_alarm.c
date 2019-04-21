@@ -204,7 +204,7 @@ FUNC(StatusType, OS_CODE)
     p_trigger_cb->status = OSEE_TRIGGER_CANCELED;
     ev = E_OK;
   } 
-  /*if the status is inactive cancel the counter and return E_OK status*/
+  /*if the status is active, cancel the counter and return E_OK status*/
   else {
     p_trigger_cb->status = OSEE_TRIGGER_INACTIVE;
     osEE_counter_cancel_trigger(p_counter_db, p_trigger_db);
