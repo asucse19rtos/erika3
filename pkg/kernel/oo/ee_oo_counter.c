@@ -53,6 +53,12 @@
 
 #include "ee_internal.h"
 
+/**
+ * insert relative trigger
+ * @param[in] p_counter_db pointer to counter descriptor block
+ * @param[in] p_trigger_db pointer to trigger descriptor block
+ * @param[in] delta number of ticks to fire after
+ */
 FUNC(void, OS_CODE)
   osEE_counter_insert_rel_trigger
 (
@@ -61,10 +67,12 @@ FUNC(void, OS_CODE)
   VAR(TickType, AUTOMATIC)                       delta
 )
 {
+  /** osEE_counter_eval_when: return the value that the counter should fire at*/
+  /** we can now set alarm absolute after calculating the absolute tick that should fire at.*/
   osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_db,
     osEE_counter_eval_when(p_counter_db, delta));
 }
-
+/** insert the new trigger in the queue*/
 FUNC(void, OS_CODE)
   osEE_counter_insert_abs_trigger
 (
@@ -74,22 +82,24 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_CounterCB, AUTOMATIC, OS_APPL_DATA)
-    p_counter_cb  = p_counter_db->p_counter_cb;
+    p_counter_cb  = p_counter_db->p_counter_cb;/**< pointer to counter control block*/
   P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-    p_previous    = NULL;
+    p_previous    = NULL;/**< pointer to previous trigger descriptor block and initialize it to NULL*/
   P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-    p_current     = p_counter_cb->trigger_queue;
+    p_current     = p_counter_cb->trigger_queue;/**< pointer to current trigger DB and initialize it to the first one in the trigger queue*/
   CONST(TickType, AUTOMATIC)
-    counter_value = p_counter_cb->value;
+    counter_value = p_counter_cb->value;/**< current counter value*/
   VAR(OsEE_bool, AUTOMATIC)
-    work_not_done = OSEE_TRUE;
+    work_not_done = OSEE_TRUE;/**< boolean that work is not done yet*/
 
   /* Update Trigger Status */
   p_trigger_db->p_trigger_cb->when   = when;
 
+  /* iterate till current equal NULL and work is finished */
   while ((p_current != NULL) && work_not_done) {
-    CONST(TickType, AUTOMATIC) current_when = p_current->p_trigger_cb->when;
+    CONST(TickType, AUTOMATIC) current_when = p_current->p_trigger_cb->when;/**< current when value and initialize it to the when of the first one in the queue*/
 
+    //if current when is greater than current counter value
     if (current_when > counter_value) {
       /* "Current" belong to this counter-loop */
       if ((when >= current_when) || (when <= counter_value)) {
@@ -97,7 +107,7 @@ FUNC(void, OS_CODE)
            (when <= counter_value) => "New" in next loop. */
         p_previous  = p_current;
         p_current   = p_current->p_trigger_cb->p_next;
-      } else {
+      } else {/* when is smaller than current_when*/
         work_not_done = OSEE_FALSE;
       }
     } else {
@@ -115,11 +125,13 @@ FUNC(void, OS_CODE)
   }
 
   if (p_previous != NULL) {
+    /* meanse that we have entered the while loop, and we should put the new trigger between the previous and next trigger*/
     p_previous->p_trigger_cb->p_next  = p_trigger_db;
   } else {
+    /* if previous = NULL, means that we did not enter while loop and we will put the new trigger at the start of the queue*/
     p_counter_cb->trigger_queue       = p_trigger_db;
   }
-
+  /* set the next trigger to the new one is the current reached trigger*/
   p_trigger_db->p_trigger_cb->p_next = p_current;
 }
 
@@ -135,14 +147,14 @@ FUNC(void, OS_CODE)
   CONSTP2CONST(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_cb  = p_trigger_db->p_trigger_cb;
   P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-    p_current     = p_counter_cb->trigger_queue;
+    p_current     = p_counter_cb->trigger_queue;/** the trigger list attached to this counter */
 
   if (p_current == p_trigger_db) {
-    /* The trigger to be removed is the first one in the queue */
+    /* The trigger to be removed is the first one in the queue by making the queue points to the next trigger*/
     p_counter_cb->trigger_queue = p_trigger_cb->p_next;
-  } else {
+  } else {/*if not the first one in the queue*/
     P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA) p_previous;
-    do {
+    do {/*iterate the queue till the trigger is found*/
       p_previous = p_current;
       p_current  = p_current->p_trigger_cb->p_next;
     } while ((p_current != NULL) && (p_current != p_trigger_db));
