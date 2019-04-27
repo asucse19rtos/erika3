@@ -61,11 +61,11 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC) ev;
   CONSTP2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
-    p_st_cb = osEE_st_get_cb(p_st_db);                          /* get schedule table control block */
+    p_st_cb = osEE_st_get_cb(p_st_db);
   CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
-    p_trigger_db = osEE_st_get_trigger_db(p_st_db);             /* get trigger descriptor block */    
+    p_trigger_db = osEE_st_get_trigger_db(p_st_db);
   CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
-    p_trigger_cb = p_trigger_db->p_trigger_cb;                  /* get trigger control block */
+    p_trigger_cb = p_trigger_db->p_trigger_cb;
 #if (!defined(OSEE_SINGLECORE))
   CONST(CoreIdType, AUTOMATIC)
     counter_core_id = p_counter_db->core_id;
@@ -80,10 +80,10 @@ FUNC(StatusType, OS_CODE)
     (Even though the ST is Reenabled it has to restart from the beginning) */
     
     p_st_cb->p_next_table = NULL;
-    p_st_cb->position     = 0U;               /* the expiry point to be processed */
-    p_st_cb->deviation    = 0;              
+    p_st_cb->position     = 0U;
+    p_st_cb->deviation    = 0;
     p_st_cb->st_status    = SCHEDULETABLE_RUNNING;
-    p_st_cb->start        = osEE_counter_eval_when(p_counter_db, offset); /* get the start tick of the table*/
+    p_st_cb->start        = osEE_counter_eval_when(p_counter_db, offset);
 
     if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
       /* Re-turn on the trigger, that is in handling, since is handling I'll set
@@ -96,7 +96,7 @@ FUNC(StatusType, OS_CODE)
 
       osEE_counter_insert_rel_trigger(p_counter_db, p_trigger_db,
         offset  + (*p_st_db->p_expiry_point_array)[0].offset
-      );    /* set the trigger to the offset of the first expiry point */
+      );
     }
     ev = E_OK;
   }
@@ -109,14 +109,14 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   osEE_st_start_abs
 (
-  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)  p_counter_db, /*counter descriptor block*/
-  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_DATA) p_st_db,      /*schedule table descriptor block*/
-  VAR(TickType,   AUTOMATIC)                      start         /*start tick at which the schedule table started*/
+  P2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)  p_counter_db,
+  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_DATA) p_st_db,
+  VAR(TickType,   AUTOMATIC)                      start
 )
 {
   VAR(StatusType, AUTOMATIC) ev;
   CONSTP2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
-    p_st_cb = osEE_st_get_cb(p_st_db);                  /*get schedule table control block*/
+    p_st_cb = osEE_st_get_cb(p_st_db);
   CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_db = osEE_st_get_trigger_db(p_st_db);
   CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
@@ -150,7 +150,6 @@ FUNC(StatusType, OS_CODE)
     } else {
       /* Turn On the Trigger */
       p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
-      /*set trigger to (start + initial offset)*/
 
       osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_db,
         start + (*p_st_db->p_expiry_point_array)[0].offset
@@ -173,13 +172,13 @@ FUNC(StatusType, OS_CODE)
 {
   VAR(StatusType, AUTOMATIC) ev;
   CONSTP2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
-    p_st_cb = osEE_st_get_cb(p_st_db);   /*schedule table control block*/
+    p_st_cb = osEE_st_get_cb(p_st_db);
   CONSTP2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_db = osEE_st_get_trigger_db(p_st_db);
   CONSTP2VAR(OsEE_TriggerCB, AUTOMATIC, OS_APPL_DATA)
     p_trigger_cb = p_trigger_db->p_trigger_cb;
   CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
-    p_counter_db = p_trigger_db->p_counter_db; /*counter descriptor block*/
+    p_counter_db = p_trigger_db->p_counter_db;
 #if (!defined(OSEE_SINGLECORE))
   CONST(CoreIdType, AUTOMATIC)
     counter_core_id = p_counter_db->core_id;
