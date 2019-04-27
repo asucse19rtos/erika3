@@ -1479,6 +1479,7 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC) ev;
+  /*p_cdb is a pointer to the core descriptor block of the currently running core*/
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
     /** p_cdb pointer to the Core Descriptor Block (The struct stores all
@@ -1488,10 +1489,10 @@ FUNC(StatusType, OS_CODE)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
-    p_ccb = p_cdb->p_ccb;
-    /** p_ccb pointer to the Core Control Block (The struct stores all
-     *  the information related to the handling of a core in RAM) */
-  osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskID);
+	  /*p_ccb is a pointer to the core control block of the currently running core*/
+	  p_ccb = p_cdb->p_ccb;
+
+osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskID);
   osEE_stack_monitoring(p_cdb);
 
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
@@ -1527,6 +1528,7 @@ FUNC(StatusType, OS_CODE)
     VAR(TaskType, AUTOMATIC)
       tid = INVALID_TASK;
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
+		/*p_tdb is a pointer to the task descriptor block of the currently running task defined in ccb */
       p_tdb = p_ccb->p_curr;
 
     /* This function should return the running task. Since ISR2 are in
@@ -1544,8 +1546,9 @@ FUNC(StatusType, OS_CODE)
       /* In case of ISR2 search the first stacked that is not an
          ISR2. it could be a basic/extended task or an IDLE task */
       P2CONST(OsEE_SN, AUTOMATIC, OS_APPL_DATA)
+		  /*p_stk_sn is a pointer to the schedule node of the first task in the ready queue which is the currently running task */
         p_sn = p_ccb->p_stk_sn->p_next;
-
+	  /*Iterate over the whole ready queue's linked list until the first scheduled task/ISR is found, its ID should be returned*/
       while (p_sn != NULL) {
         CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
           p_searched_tdb = p_sn->p_tdb;
@@ -1589,7 +1592,9 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)                    ev;
+  /*p_kdb is a pointer to the kernel descriptor block*/
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_DATA) p_kdb = osEE_get_kernel();
+  /*p_cdb is a pointer to the core descriptor block of the currently running core*/
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA)
     p_cdb = osEE_get_curr_core();
     /** p_cdb pointer to the Core Descriptor Block (The struct stores all
@@ -1599,6 +1604,7 @@ FUNC(StatusType, OS_CODE)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
+	  /*p_ccb is a pointer to the core control block of the currently running core*/
     p_ccb = p_cdb->p_ccb;
     /** p_ccb pointer to the Core Control Block (The struct stores all
      *  the information related to the handling of a core in RAM) */
@@ -1639,11 +1645,13 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_ID;
   } else
   {
+	/*p_kdb has the definition of all tasks array defined in kernel with the index TaskType*/
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
       p_tdb = (*p_kdb->p_tdb_ptr_array)[TaskID];
     /* XXX: This SHALL be atomic. Sure for TriCore,
             visually check generate asm for each architecture */
     CONST(OsEE_task_status, AUTOMATIC) local_state = p_tdb->p_tcb->status;
+	/*implementation Osek mapping*/
     switch (local_state) {
       case OSEE_TASK_SUSPENDED:
         (*State) = SUSPENDED;
