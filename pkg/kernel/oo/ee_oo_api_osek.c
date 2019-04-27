@@ -232,18 +232,18 @@ FUNC(void, OS_CODE)
 FUNC(StatusType, OS_CODE)
   StartOS
 (
-  VAR(AppModeType, AUTOMATIC) Mode
+  VAR(AppModeType, AUTOMATIC) Mode                                                        //specific mode to start the os in
 )
 {
-  VAR(StatusType, AUTOMATIC)                      ev = E_OK;
+  VAR(StatusType, AUTOMATIC)                      ev = E_OK;   
   VAR(AppModeType, AUTOMATIC)                     real_mode = Mode;
-#if (!defined(OSEE_SINGLECORE))
-  CONST(CoreIdType, AUTOMATIC)           curr_core_id = osEE_get_curr_core_id();
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
-  CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)   p_kcb = p_kdb->p_kcb;
+#if (!defined(OSEE_SINGLECORE))                                                         // check if multicore
+  CONST(CoreIdType, AUTOMATIC)           curr_core_id = osEE_get_curr_core_id();         // get core id
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();            //get kernel descriptor block
+CONSTP2VAR(OsEE_KCB, AUTOMATIC, OS_APPL_DATA)   p_kcb = p_kdb->p_kcb;                 // get kernel control block
 #endif /* !OSEE_SINGLECORE */
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();
-  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)  p_cdb = osEE_get_curr_core();      // get core descriptor block
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)   p_ccb = p_cdb->p_ccb;              // get core control block 
   CONST(OsEE_reg, AUTOMATIC) flags = osEE_begin_primitive();
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartOS);
@@ -619,15 +619,15 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)                      ev;
-  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel(); // get kernel discribtor block (kernel_types.h line 963)
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
-    p_cdb = osEE_get_curr_core(); // get core discribtor block (kernel_types.h line 836)
+    p_cdb = osEE_get_curr_core();
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
-    p_ccb = p_cdb->p_ccb; // get core control block (kernel_types.h line 729)
+    p_ccb = p_cdb->p_ccb;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ActivateTask);
   osEE_stack_monitoring(p_cdb);
@@ -645,7 +645,7 @@ FUNC(StatusType, OS_CODE)
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* ActivateTask is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
-    ev = E_OS_DISABLEDINT; 
+    ev = E_OS_DISABLEDINT;
   } else
   if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
   {
@@ -657,17 +657,15 @@ FUNC(StatusType, OS_CODE)
   } else
   {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-      p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];  // get task discribtor block (kernel_types.h line 264)
-      //p_tdb_ptr_array array of pointers contain poniters to task discribtor block of each task 
-      //Rt-druid gives a task a number as its id in order of the tasks declaration
+      p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];
 
     if (p_tdb_act->task_type <= OSEE_TASK_TYPE_EXTENDED) {
       CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
 
-      ev = osEE_task_activated(p_tdb_act); // activate task and check maximum number of activations
+      ev = osEE_task_activated(p_tdb_act);
 
       if (ev == E_OK) {
-        (void)osEE_scheduler_task_activated(p_kdb, p_tdb_act);  // scheduling the task
+        (void)osEE_scheduler_task_activated(p_kdb, p_tdb_act);
       }
 
       osEE_end_primitive(flags);
@@ -681,8 +679,8 @@ FUNC(StatusType, OS_CODE)
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
     osEE_set_service_id(p_ccb, OSServiceId_ActivateTask);
-    osEE_set_api_param1_num_param(p_ccb, TaskID); // Id of the task caused the error
-    osEE_call_error_hook(p_ccb, ev);  //call the error hook defined by the user
+    osEE_set_api_param1_num_param(p_ccb, TaskID);
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -712,7 +710,7 @@ FUNC(StatusType, OS_CODE)
           OSEE_HAS_SERVICE_PROTECTION */
     p_ccb = p_cdb->p_ccb;
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST)
-    p_curr = p_ccb->p_curr; //get the task discribtor block of the current task that will be terminated
+    p_curr = p_ccb->p_curr;
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_ChainTask);
   osEE_stack_monitoring(p_cdb);
@@ -735,26 +733,25 @@ FUNC(StatusType, OS_CODE)
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
 #if (defined(OSEE_HAS_CHECKS))
-  if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED) // chain task is allowed only in tasks not ISR
-  //task type (api_types.h line 325)
+  if ((p_curr->task_type > OSEE_TASK_TYPE_EXTENDED)
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
-      || (p_ccb->os_context > OSEE_TASK_CTX)  
+      || (p_ccb->os_context > OSEE_TASK_CTX)
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
   )
   {
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_CHECKS */
-  if (!osEE_is_valid_tid(p_kdb, TaskID)) {  //check if task id is valid 
+  if (!osEE_is_valid_tid(p_kdb, TaskID)) {
     ev = E_OS_ID;
   } else {
     CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
-      p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID]; //get the task discribtor block of the task to be activated
+      p_tdb_act = (*p_kdb->p_tdb_ptr_array)[TaskID];
 #if (defined(OSEE_HAS_CHECKS))
 #if (defined(OSEE_HAS_RESOURCES)) || (defined(OSEE_HAS_SPINLOCKS))
     CONSTP2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)
-      p_curr_tcb  = p_curr->p_tcb; //get task control block of the current task to be terminated
-    if (p_curr_tcb->p_last_m != NULL) {   // check if the task has resources or spinlocks
+      p_curr_tcb  = p_curr->p_tcb;
+    if (p_curr_tcb->p_last_m != NULL) {
 #if (defined(OSEE_HAS_RESOURCES))
 #if (defined(OSEE_HAS_SPINLOCKS))
       if (p_curr_tcb->p_last_m->m_type == OSEE_M_RESOURCE) {
@@ -787,7 +784,7 @@ FUNC(StatusType, OS_CODE)
 
       flags = osEE_begin_primitive();
 
-      if (p_tdb_act == p_curr) {   // check if the current task is the task to be activated
+      if (p_tdb_act == p_curr) {
         /* If the Task chain on it self, flag it. */
         p_tdb_act->p_tcb->status = OSEE_TASK_CHAINED;
         ev = E_OK;
@@ -799,8 +796,8 @@ FUNC(StatusType, OS_CODE)
       }
       if (ev == E_OK) {
         /* The following do not return! */
-        osEE_hal_terminate_activation(&osEE_get_curr_task()->hdb,  
-          OSEE_KERNEL_TERMINATE_ACTIVATION_CB); //terminate the current task
+        osEE_hal_terminate_activation(&osEE_get_curr_task()->hdb,
+          OSEE_KERNEL_TERMINATE_ACTIVATION_CB);
       }
       osEE_end_primitive(flags);
     } else {
@@ -945,8 +942,8 @@ FUNC(StatusType, OS_CODE)
   void
 )
 {
-  VAR(StatusType, AUTOMATIC)                     ev;
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb  = osEE_get_curr_core();
+  VAR(StatusType, AUTOMATIC)                     ev;  
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST) p_cdb  = osEE_get_curr_core(); //core descriptor block
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
@@ -1011,7 +1008,7 @@ FUNC(StatusType, OS_CODE)
     /* Release internal resources */
     p_tcb->current_prio = p_curr->ready_prio;
     /* Try preemption */
-    (void)osEE_scheduler_task_preemption_point(osEE_get_kernel());
+    (void)osEE_scheduler_task_preemptiofn_point(osEE_get_kernel());
     /* Restore internal resources */
     p_tcb->current_prio = p_curr->dispatch_prio;
 
@@ -1269,13 +1266,13 @@ FUNC(StatusType, OS_CODE)
 )
 {
   VAR(StatusType, AUTOMATIC)                    ev;
-  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_DATA) p_cdb = osEE_get_curr_core();  // get core descriptor block
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
-    p_ccb = p_cdb->p_ccb;
+  p_ccb = p_cdb->p_ccb;                                                      // get core control block   
   CONST(OsEE_reg, AUTOMATIC)  flags = osEE_begin_primitive();
   CONST(OsEE_kernel_status, AUTOMATIC) os_status = p_ccb->os_status;
 
@@ -1296,7 +1293,7 @@ FUNC(StatusType, OS_CODE)
 /* ShutdownOS is callable in Task, ISR2, Error/Startup Hooks */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
-  } else
+  } else                                                            /*Allowed at task level, ISR level, in ErrorHook and StartupHook,and also called internally by the operating system.*/                                                                 
   if ((p_ccb->os_context > OSEE_ERRORHOOK_CTX) && 
       (p_ccb->os_context != OSEE_STARTUPHOOK_CTX)
   )
@@ -1304,7 +1301,8 @@ FUNC(StatusType, OS_CODE)
     ev = E_OS_CALLEVEL;
   } else
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
-  if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))
+  if ((os_status == OSEE_KERNEL_STARTED) || (os_status == OSEE_KERNEL_STARTING))      //kernel starting before calling the startuphook , kernel started after calling the startup hook
+  //check if the OS started or not
   {
     osEE_shutdown_os(p_cdb, Error);
   } else {
@@ -2642,21 +2640,21 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   StartScheduleTableRel
 (
-  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,
-  VAR(TickType, AUTOMATIC)          Offset
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,  /* ID of the table to be started*/
+  VAR(TickType, AUTOMATIC)          Offset            /*Number of ticks on the counter before the the schedule table processing is started*/
 )
 {
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
-    p_kdb = osEE_get_kernel();
+    p_kdb = osEE_get_kernel();                        /* get kernel descriptor block*/
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
-    p_cdb = osEE_get_curr_core();
+    p_cdb = osEE_get_curr_core();                     /* get core descriptor block*/
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
-    p_ccb = p_cdb->p_ccb;
+    p_ccb = p_cdb->p_ccb;                            /*get core control block*/
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartScheduleTableRel);
   osEE_stack_monitoring(p_cdb);
@@ -2686,9 +2684,9 @@ FUNC(StatusType, OS_CODE)
   } else
   {
     CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
-      p_st_db = (*p_kdb->p_st_ptr_array)[ScheduleTableID];
+      p_st_db = (*p_kdb->p_st_ptr_array)[ScheduleTableID];                 /*get schedule descriptor block */
     CONSTP2VAR(OsEE_CounterDB, AUTOMATIC, OS_APPL_DATA)
-      p_counter_db = osEE_st_get_trigger_db(p_st_db)->p_counter_db;
+      p_counter_db = osEE_st_get_trigger_db(p_st_db)->p_counter_db;         /* get the counter of the schedule table*/
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
 #if (defined(OSEE_HAS_CHECKS))
@@ -2724,7 +2722,7 @@ FUNC(StatusType, OS_CODE)
           <Offset> + Initial Offset ticks have elapsed on the underlying
           counter. The state of <ScheduleTableID> is set to
           SCHEDULETABLE_RUNNING before the service returns to the caller. */
-      ev = osEE_st_start_rel(p_counter_db, p_st_db, Offset);
+      ev = osEE_st_start_rel(p_counter_db, p_st_db, Offset);  
     }
     osEE_end_primitive(flags);
   }
@@ -2749,21 +2747,21 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   StartScheduleTableAbs
 (
-  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,
-  VAR(TickType, AUTOMATIC)          Start
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,      /*Schedule table to be started*/
+  VAR(TickType, AUTOMATIC)          Start                 /*Absolute counter tick value at which the schedule table is started*/
 )
 {
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
-    p_kdb = osEE_get_kernel();
+    p_kdb = osEE_get_kernel();                            /*Kernel Descriptor block*/
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
-    p_cdb = osEE_get_curr_core();
+    p_cdb = osEE_get_curr_core();                         /*core Descriptor block*/
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
-    p_ccb = p_cdb->p_ccb;
+  p_ccb = p_cdb->p_ccb;                                         /*core control block*/
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartScheduleTableAbs);
   osEE_stack_monitoring(p_cdb);
@@ -2854,7 +2852,7 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   StopScheduleTable
 (
-  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID   /*Schedule table to be stopped*/
 )
 {
  VAR(StatusType, AUTOMATIC)  ev;
@@ -2934,7 +2932,7 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   GetScheduleTableStatus
 (
-  VAR(ScheduleTableType, AUTOMATIC)           ScheduleTableID,
+  VAR(ScheduleTableType, AUTOMATIC)           ScheduleTableID,  /*Schedule table for which status is requested*/
   VAR(ScheduleTableStatusRefType, AUTOMATIC)  ScheduleStatus
 )
 {
@@ -3036,8 +3034,8 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   NextScheduleTable
 (
-  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID_From,
-  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID_To
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID_From, /*Currently processed schedule table*/
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID_To    /*Schedule table that provides its series of expiry points*/
 )
 {
   VAR(StatusType, AUTOMATIC)  ev;
@@ -3159,12 +3157,12 @@ FUNC(StatusType, OS_CODE)
     NextScheduleTable() is stopped, NextScheduleTable() shall not start the
     "next" schedule table and change its state to SCHEDULETABLE_STOPPED.
     XXX: !!! Contradiction with SWS_Os_00283 !!! */
-      if (p_from_st_cb->p_next_table != NULL) {
+      if (p_from_st_cb->p_next_table != NULL) {  /*check if the from schedule table already has next table*/
         osEE_st_get_cb(p_from_st_cb->p_next_table)->
-          st_status = SCHEDULETABLE_STOPPED;
+          st_status = SCHEDULETABLE_STOPPED; /*the next table should be stopped*/
       }
 
-      p_from_st_cb->p_next_table = p_to_st_db;
+      p_from_st_cb->p_next_table = p_to_st_db;     /*the next table is replaced with the 'to table'*/
       p_to_st_cb->st_status = SCHEDULETABLE_NEXT;
 
       ev = E_OK;
