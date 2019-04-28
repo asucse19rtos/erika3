@@ -3191,21 +3191,21 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   SyncScheduleTable
 (
-  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,
-  VAR(TickType, AUTOMATIC)          Value
+  VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID,    /*Schedule table to be synchronized*/
+  VAR(TickType, AUTOMATIC)          Value               /*The current value of the synchronization counter*/
 )
 {
   VAR(StatusType, AUTOMATIC)  ev;
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
-    p_kdb = osEE_get_kernel();
+    p_kdb = osEE_get_kernel();                          /*get kernel descriptor block*/
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
-    p_cdb = osEE_get_curr_core();
+    p_cdb = osEE_get_curr_core();                       /*get core descriptor block*/
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
-    p_ccb = p_cdb->p_ccb;
+  p_ccb = p_cdb->p_ccb;                                   /*get core control block*/
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SyncScheduleTable);
   osEE_stack_monitoring(p_cdb);

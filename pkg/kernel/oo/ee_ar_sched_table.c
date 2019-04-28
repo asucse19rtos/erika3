@@ -227,7 +227,7 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   osEE_st_syncronize
 (
-  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)  p_st_db,
+  P2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)  p_st_db,    /*schedule table descriptor block*/
   VAR(TickType, AUTOMATIC)                          value
 )
 {
@@ -272,15 +272,19 @@ FUNC(StatusType, OS_CODE)
     THEN the OS shall set the next EP to expire delay +
     min(MaxLengthen, Deviation) ticks from the current expiry. */
     /* Try to synchronize */
+/*  keep processing each expiry point at absolute value of the synchronization counter equal
+    to the expiry point’s offset. 
+    */
     if (temp_deviation != 0) {
       if (temp_deviation > 0) {
         CONST(TickType, AUTOMATIC)
           abs_temp_dev = (TickType)temp_deviation;
         CONST(TickType, AUTOMATIC)
-          max_shorten = (*p_st_db->p_expiry_point_array)[position].max_shorten;
+          max_shorten = (*p_st_db->p_expiry_point_array)[position].max_shorten; 
+/*  max shorten : the maximum number of ticks that can be subtracted from expiry point offset */
         CONST(TickType, AUTOMATIC)
           shortening =
-            (max_shorten < abs_temp_dev)? max_shorten: abs_temp_dev;
+            (max_shorten < abs_temp_dev)? max_shorten: abs_temp_dev; /*set shortening to the deviation if the dev < max shorten*/
 
         /* Evaluate Next-When */
         next_when      -= shortening;
@@ -289,12 +293,11 @@ FUNC(StatusType, OS_CODE)
       } else {
         CONST(TickType, AUTOMATIC)
           abs_temp_dev = (TickType)(-temp_deviation);
+/*  max lengthen : the maximum number of ticks that can be added to expiry point offset.*/
         VAR(TickType, AUTOMATIC)
-          max_lengthen = (*p_st_db->p_expiry_point_array)[position].
-            max_lengthen;
+          max_lengthen = (*p_st_db->p_expiry_point_array)[position].max_lengthen;
         CONST(TickType, AUTOMATIC)
-          lengthening =
-            (max_lengthen < abs_temp_dev)? max_lengthen: abs_temp_dev;
+          lengthening =  (max_lengthen < abs_temp_dev)? max_lengthen: abs_temp_dev; /*set lengthening to the dev if maxLengthening < dev*/ 
 
         /* Evaluate Next-When */
         next_when       += lengthening;
