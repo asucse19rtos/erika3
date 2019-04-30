@@ -608,8 +608,8 @@ FUNC(StatusType, OS_CODE)
   }
 
   if (ev != E_OK) {
-    osEE_set_service_id(p_ccb, OSServiceId_StartOS); /* Service caused the error. */
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_set_service_id(p_ccb, OSServiceId_StartOS);
+    osEE_call_error_hook(p_ccb, ev);
     osEE_orti_trace_service_exit(p_ccb, OSServiceId_StartOS);
     osEE_end_primitive(flags);
   }
@@ -1051,10 +1051,9 @@ FUNC(StatusType, OS_CODE)
      *  the information related to the handling of a core in RAM) */
   CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_CONST) p_curr = p_ccb->p_curr;
   /** p_curr pointer to the Task Descriptor Block (It stores all the
-   *  information related to the task that is configured statically) */
+    *  information related to the task that is configured statically) */
   CONSTP2VAR(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb  = p_curr->p_tcb;
-  /** p_tcb pointer to the Task Control Block (It stores all the information
-   *  related to the task that can change at runtime) */
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_Schedule);
 
   osEE_stack_monitoring(p_cdb);
@@ -1073,7 +1072,7 @@ FUNC(StatusType, OS_CODE)
 /* Schedule is callable by Task */
 #if (defined(OSEE_HAS_SERVICE_PROTECTION))
 /* Checks if there is a call of DisableAllInterrupts or SuspendAllInterrupts
- * or SuspendOSInterrupts, returns E_OS_DISABLEDINT if found any. */
+  * or SuspendOSInterrupts, returns E_OS_DISABLEDINT if found any. */
   if (osEE_check_disableint(p_curr_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
@@ -1110,7 +1109,6 @@ FUNC(StatusType, OS_CODE)
   } else
 #endif /* OSEE_HAS_RESOURCES || OSEE_HAS_SPINLOCKS */
 #endif /* OSEE_HAS_CHECKS */
-  
   if (p_tcb->current_prio == p_curr->dispatch_prio)
   {
     /* Begin primitive */
@@ -1259,7 +1257,7 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {                                               // if there is an error of any kind or if there is a task refused the resource
     CONST(OsEE_reg, AUTOMATIC)    
       flags = osEE_begin_primitive();                             // get flags
-    osEE_set_service_id(p_ccb, OSServiceId_GetResource); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_GetResource);
     osEE_set_api_param1_num_param(p_ccb, ResID);
     osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
     osEE_end_primitive(flags);                                    // end flags
@@ -1391,7 +1389,7 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_ReleaseResource); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_ReleaseResource);
     osEE_set_api_param1_num_param(p_ccb, ResID);  /** param 1 ErrorHook macros - first parameter */
 
     osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
@@ -1462,7 +1460,7 @@ FUNC(StatusType, OS_CODE)
 
 #if (defined(OSEE_HAS_ERRORHOOK))
   if (ev != E_OK) {
-    osEE_set_service_id(p_ccb, OSServiceId_ShutdownOS); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_ShutdownOS);
     osEE_set_api_param1_num_param(p_ccb, (ObjectIDType)Error);
     osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
   }
@@ -1574,7 +1572,7 @@ osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetTaskID);
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_GetTaskID); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_GetTaskID);
     osEE_set_api_param1_p_param(p_ccb, TaskID);
     osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
     osEE_end_primitive(flags);
@@ -1681,7 +1679,7 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_GetTaskState); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_GetTaskState);
     osEE_set_api_param1_num_param(p_ccb, TaskID);
     osEE_set_api_param2_p_param(p_ccb, State);
     osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
@@ -1825,11 +1823,11 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_SetRelAlarm); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_SetRelAlarm);
     osEE_set_api_param1_num_param(p_ccb, AlarmID);
     osEE_set_api_param2_num_param(p_ccb, increment);
     osEE_set_api_param3_num_param(p_ccb, cycle);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -1944,11 +1942,11 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_SetAbsAlarm); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_SetAbsAlarm);
     osEE_set_api_param1_num_param(p_ccb, AlarmID);
     osEE_set_api_param2_num_param(p_ccb, start);
     osEE_set_api_param3_num_param(p_ccb, cycle);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -2036,9 +2034,9 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_CancelAlarm); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_CancelAlarm);
     osEE_set_api_param1_num_param(p_ccb, AlarmID);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -2130,10 +2128,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_GetAlarm); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_GetAlarm);
     osEE_set_api_param1_num_param(p_ccb, AlarmID);
     osEE_set_api_param2_p_param(p_ccb, Tick);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -2223,10 +2221,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_GetAlarmBase); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_GetAlarmBase);
     osEE_set_api_param1_num_param(p_ccb, AlarmID);
     osEE_set_api_param2_p_param(p_ccb, Info);
-    osEE_call_error_hook(osEE_get_curr_core()->p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(osEE_get_curr_core()->p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -2335,9 +2333,9 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_WaitEvent); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_WaitEvent);
     osEE_set_api_param1_num_param(p_ccb, Mask);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -2432,10 +2430,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_SetEvent); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_SetEvent);
     osEE_set_api_param1_num_param(p_ccb, TaskID);
     osEE_set_api_param2_num_param(p_ccb, Mask);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -2539,10 +2537,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_GetEvent); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_GetEvent);
     osEE_set_api_param1_num_param(p_ccb, TaskID);
     osEE_set_api_param2_p_param(p_ccb, Event);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -2614,9 +2612,9 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_ClearEvent); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_ClearEvent);
     osEE_set_api_param1_num_param(p_ccb, Mask);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -2720,10 +2718,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_GetCounterValue); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_GetCounterValue);
     osEE_set_api_param1_num_param(p_ccb, CounterID);
     osEE_set_api_param2_p_param(p_ccb, Value);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -2842,11 +2840,11 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_GetElapsedValue); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_GetElapsedValue);
     osEE_set_api_param1_num_param(p_ccb, CounterID);
     osEE_set_api_param2_p_param(p_ccb, Value);
     osEE_set_api_param3_p_param(p_ccb, ElapsedValue);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -2953,9 +2951,9 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_IncrementCounter); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_IncrementCounter);
     osEE_set_api_param1_num_param(p_ccb, CounterID);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -3067,10 +3065,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_StartScheduleTableRel); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_StartScheduleTableRel);
     osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
     osEE_set_api_param2_num_param(p_ccb, Offset);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -3177,10 +3175,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_StartScheduleTableAbs); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_StartScheduleTableAbs);
     osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
     osEE_set_api_param2_num_param(p_ccb, Start);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -3263,9 +3261,9 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_StopScheduleTable); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_StopScheduleTable);
     osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -3369,10 +3367,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_GetScheduleTableStatus); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_GetScheduleTableStatus);
     osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
     osEE_set_api_param2_p_param(p_ccb, ScheduleStatus);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -3531,10 +3529,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_NextScheduleTable); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_NextScheduleTable);
     osEE_set_api_param1_num_param(p_ccb, ScheduleTableID_From);
     osEE_set_api_param2_num_param(p_ccb, ScheduleTableID_To);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -3643,7 +3641,7 @@ FUNC(StatusType, OS_CODE)
       flags = osEE_begin_primitive();
     osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
     osEE_set_api_param2_num_param(p_ccb, Value);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -4120,9 +4118,9 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_GetSpinlock); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_GetSpinlock);
     osEE_set_api_param1_num_param(p_ccb, SpinlockID);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -4295,9 +4293,9 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_ReleaseSpinlock); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_ReleaseSpinlock);
     osEE_set_api_param1_num_param(p_ccb, SpinlockID);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
@@ -4497,10 +4495,10 @@ FUNC(StatusType, OS_CODE)
   if (ev != E_OK) {
     CONST(OsEE_reg, AUTOMATIC)
       flags = osEE_begin_primitive();
-    osEE_set_service_id(p_ccb, OSServiceId_TryToGetSpinlock); /* Service caused the error. */
+    osEE_set_service_id(p_ccb, OSServiceId_TryToGetSpinlock);
     osEE_set_api_param1_num_param(p_ccb, SpinlockID);
     osEE_set_api_param2_p_param(p_ccb, Success);
-    osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+    osEE_call_error_hook(p_ccb, ev);
     osEE_end_primitive(flags);
   }
 #endif /* OSEE_HAS_ERRORHOOK */
