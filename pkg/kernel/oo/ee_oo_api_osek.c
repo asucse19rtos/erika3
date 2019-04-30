@@ -2978,16 +2978,13 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-    /** p_cdb pointer to the Core Descriptor Block (The struct stores all
-     *  the information related to the handling of a core in Flash) */
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
-    /** p_ccb pointer to the Core Control Block (The struct stores all
-     *  the information related to the handling of a core in RAM) */
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartScheduleTableRel);
   osEE_stack_monitoring(p_cdb);
 
@@ -3003,8 +3000,6 @@ FUNC(StatusType, OS_CODE)
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* StartScheduleTableRel is callable by Task and ISR2 */
-  /* Checks if there is a call of DisableAllInterrupts or SuspendAllInterrupts
-   * or SuspendOSInterrupts, returns E_OS_DISABLEDINT if found any. */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
@@ -3090,16 +3085,13 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-    /** p_cdb pointer to the Core Descriptor Block (The struct stores all
-     *  the information related to the handling of a core in Flash) */
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
-    /** p_ccb pointer to the Core Control Block (The struct stores all
-     *  the information related to the handling of a core in RAM) */
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_StartScheduleTableAbs);
   osEE_stack_monitoring(p_cdb);
 
@@ -3115,8 +3107,6 @@ FUNC(StatusType, OS_CODE)
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* StartScheduleTableAbs is callable by Task and ISR2 */
-  /* Checks if there is a call of DisableAllInterrupts or SuspendAllInterrupts
-   * or SuspendOSInterrupts, returns E_OS_DISABLEDINT if found any. */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
@@ -3199,16 +3189,13 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-    /** p_cdb pointer to the Core Descriptor Block (The struct stores all
-     *  the information related to the handling of a core in Flash) */
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
-    /** p_ccb pointer to the Core Control Block (The struct stores all
-     *  the information related to the handling of a core in RAM) */
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_StopScheduleTable);
   osEE_stack_monitoring(p_cdb);
 
@@ -3224,8 +3211,6 @@ FUNC(StatusType, OS_CODE)
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* StopScheduleTable is callable by Task and ISR2 */
-  /* Checks if there is a call of DisableAllInterrupts or SuspendAllInterrupts
-   * or SuspendOSInterrupts, returns E_OS_DISABLEDINT if found any. */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
@@ -3285,16 +3270,13 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-    /** p_cdb pointer to the Core Descriptor Block (The struct stores all
-     *  the information related to the handling of a core in Flash) */
 #if (!defined(OSEE_HAS_ERRORHOOK)) && (!defined(OSEE_HAS_ORTI))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ERRORHOOK && !OSEE_HAS_ORTI */
     p_ccb = p_cdb->p_ccb;
-    /** p_ccb pointer to the Core Control Block (The struct stores all
-     *  the information related to the handling of a core in RAM) */
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_GetScheduleTableStatus);
   osEE_stack_monitoring(p_cdb);
 
@@ -3310,8 +3292,6 @@ FUNC(StatusType, OS_CODE)
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* GetScheduleTableStatus is callable by Task and ISR2 */
-  /* Checks if there is a call of DisableAllInterrupts or SuspendAllInterrupts
-   * or SuspendOSInterrupts, returns E_OS_DISABLEDINT if found any. */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
@@ -3392,16 +3372,12 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-    /** p_cdb pointer to the Core Descriptor Block (The struct stores all
-     *  the information related to the handling of a core in Flash) */
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
-    /** p_ccb pointer to the Core Control Block (The struct stores all
-     *  the information related to the handling of a core in RAM) */
   /* MISRA R13.5 */
   CONST(OsEE_bool, AUTOMATIC) valid_st_id_from =
     osEE_is_valid_st_id(p_kdb, ScheduleTableID_From);
@@ -3423,8 +3399,6 @@ FUNC(StatusType, OS_CODE)
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* NextScheduleTable is callable by Task and ISR2 */
-  /* Checks if there is a call of DisableAllInterrupts or SuspendAllInterrupts
-   * or SuspendOSInterrupts, returns E_OS_DISABLEDINT if found any. */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
@@ -3555,16 +3529,13 @@ FUNC(StatusType, OS_CODE)
     p_kdb = osEE_get_kernel();
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
     p_cdb = osEE_get_curr_core();
-    /** p_cdb pointer to the Core Descriptor Block (The struct stores all
-     *  the information related to the handling of a core in Flash) */
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
     p_ccb = p_cdb->p_ccb;
-    /** p_ccb pointer to the Core Control Block (The struct stores all
-     *  the information related to the handling of a core in RAM) */
+
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_SyncScheduleTable);
   osEE_stack_monitoring(p_cdb);
 
@@ -3580,8 +3551,6 @@ FUNC(StatusType, OS_CODE)
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
 /* NextScheduleTable is callable by Task and ISR2 */
-  /* Checks if there is a call of DisableAllInterrupts or SuspendAllInterrupts
-   * or SuspendOSInterrupts, returns E_OS_DISABLEDINT if found any. */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
   } else
