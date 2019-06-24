@@ -99,9 +99,9 @@ typedef struct OsEE_SDB_tag {
 typedef struct OsEE_HDB_tag {
   OsEE_SDB          * p_sdb;
   OsEE_SCB          * p_scb;
-#if (defined(OSEE_API_DYNAMIC))
+//#if (defined(OSEE_API_DYNAMIC))
   OsEE_isr_src_id     isr2_src;
-#endif /* OSEE_API_DYNAMIC */
+//#endif /* OSEE_API_DYNAMIC */
 } OSEE_CONST OsEE_HDB;
 
 /* Used to override default definition of osEE_change_context_from_isr2,

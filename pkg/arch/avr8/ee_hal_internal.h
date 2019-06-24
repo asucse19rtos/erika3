@@ -62,6 +62,7 @@
 #include "ee_hal_internal_types.h"
 #include "ee_kernel_types.h"
 #include "ee_std_change_context.h"
+#include "ee_mcu_common_types.h"
 
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
 #include "ee_atmega_timer0ctc.h"
@@ -116,6 +117,42 @@ OSEE_STATIC_INLINE OsEE_reg osEE_hal_suspendIRQ ( void )
   register OsEE_reg sr = SREG;
   osEE_hal_disableIRQ();
   return sr;
+}
+OSEE_STATIC_INLINE void osEE_hal_disableIRQsource(OsEE_isr_src_id source_id)
+{
+   OsEE_reg  volatile * Address;
+  uint8_t pin ;
+  switch(source_id)
+  {
+    case OSEE_AVR8_INT0_ISR_ID:
+    	Address = EIMSK;
+      pin = INT0;                     
+      break;
+    case OSEE_AVR8_INT1_ISR_ID:
+    	Address = EIMSK;
+      pin = INT1;                     
+      break;
+    case OSEE_AVR8_TIMER1_COMPA_ISR_ID:
+      Address = TIMSK1;
+      pin = OCIE1A;
+      break;
+    
+//    case OSEE_AVR8_INT1_ISR_ID:
+
+  }
+  //read
+  register OsEE_uint16  Data = OSEE_HWREG(Address);
+//  Data |= ((OsEE_uint16)EE_HWREG(Address) << 0x08U);
+//  Address--;
+  //modify
+  Data &= ~ (1U << pin);
+  //write
+  OSEE_HWREG(Address) = (OsEE_reg)(Data);
+//OSEE_HWREG(Address)   = (OsEE_reg)(Data >> 0x08U);
+
+
+
+
 }
 
 OSEE_STATIC_INLINE void osEE_hal_resumeIRQ ( OsEE_reg flags )
