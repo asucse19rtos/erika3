@@ -4546,6 +4546,15 @@ FUNC(StatusType, OS_CODE)
 }
 
 
+FUNC(StatusType, OS_CODE)
+EnableInterruptSource
+(
+	ISRType ISRID,
+	OsEE_bool ClearPending
+)
+{
+
+}
 
 
 
