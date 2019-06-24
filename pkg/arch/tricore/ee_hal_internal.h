@@ -292,6 +292,24 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE osEE_hal_suspendIRQ(void)
   return icr.reg;
 }
 
+/*Disable Interrupt source*/
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_disableIRQ_source(OsEE_isr_src_id src_id)
+{
+	switch (src_id)
+	{
+	case OSEE_TC_SRC_GPT120T6:
+
+	break;
+	}
+	
+}
+
+/* Enable Interrupt source */
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_enableIRQ_source(void)
+{
+	
+}
+
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_resumeIRQ(OsEE_reg flags)
 {
   OsEE_icr icr;
