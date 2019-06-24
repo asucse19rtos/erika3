@@ -67,6 +67,7 @@
 #include "ee_std_change_context.h"
 #include "ee_kernel_types.h"
 #include "ee_get_kernel_and_core.h"
+#include "inc/tc29xb/Ifx_Reg.h"
 #if (!defined(OSEE_TRICORE_ILLD))
 #include "ee_tc_system.h"
 #endif
@@ -293,21 +294,28 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE osEE_hal_suspendIRQ(void)
 }
 
 /*Disable Interrupt source*/
-OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_disableIRQ_source(OsEE_isr_src_id src_id)
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_disableIRQsource(OsEE_isr_src_id src_id)
 {
 	switch (src_id)
 	{
 	case OSEE_TC_SRC_GPT120T6:
-
-	break;
+		SRC_GPT120T6.B.SRE = 0;
+		break;
 	}
 	
 }
 
 /* Enable Interrupt source */
-OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_enableIRQ_source(void)
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_enableIRQ_source(OsEE_isr_src_id src_id)
 {
-	
+	switch (src_id)
+	{
+	case OSEE_TC_SRC_GPT120T6:
+		SRC_GPT120T6.B.SRE = 1;
+		break;
+	}
+
+}
 }
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_resumeIRQ(OsEE_reg flags)

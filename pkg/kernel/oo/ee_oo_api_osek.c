@@ -4542,7 +4542,7 @@ FUNC(StatusType, OS_CODE)
     osEE_hal_disableIRQsource(p_tdb_act->hdb.isr2_src);
     ev = E_OK;
   }
-  
+  return ev;
 }
 
 
