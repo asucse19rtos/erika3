@@ -75,7 +75,7 @@ extern "C" {
 /*==============================================================================
                   ISR IDs in Dynamic A.P.I.s Environment
  =============================================================================*/
-#if (defined(OSEE_API_DYNAMIC))
+//#if (defined(OSEE_API_DYNAMIC))
 
 /* INT0 interrupt vector */
 #define OSEE_AVR8_INT0_ISR_ID 0x00U
@@ -294,7 +294,7 @@ extern "C" {
 #define OSEE_AVR8_USART3_TX_ISR_ID    0x3BU
 #endif  /* __AVR_ATmega1281__ */
 
-#endif  /* OSEE_API_DYNAMIC */
+//#endif  /* OSEE_API_DYNAMIC */
 
 #if (defined(__cplusplus))
 }
