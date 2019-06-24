@@ -818,7 +818,9 @@ typedef enum {
   OSId_Action                                 = (82),
 /* Special value to flag an error happened in a Kernel internal service */
   OSId_Kernel                                 = (84),
-  OsId_Invalid                                = (86)
+  OsId_Invalid                                = (86),
+  OSServiceId_DisableInterruptSource          = (88),
+  OSServiceId_EnableInterruptSource           = (90)
 } OsEE_service_id_type;
 
 /** This data type represents the identification of system services. */
