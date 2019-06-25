@@ -120,6 +120,7 @@ typedef struct OsEE_HDB_tag {
   OsEE_SDB          * p_sdb;
   OsEE_SCB          * p_scb;
   OsEE_isr_src_id     isr2_src;
+  OsEE_bool           isr_status; // False if disabled , True if enabled
  } OSEE_CONST OsEE_HDB;
 
 typedef struct {
