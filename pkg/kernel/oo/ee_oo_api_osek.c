@@ -4529,15 +4529,15 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
   /* Checks if the desired task to be activated is valid, TaskID is defined
    * in the OIL. If invalid ID, returns E_OS_ID. */
-  if (!osEE_is_valid_tid(p_kdb, ISRID)) {
+  if (!osEE_is_valid_tid(p_kdb, ISRID)) 
+  {
     ev = E_OS_ID;
-  } else 
-/* if()
+  } 
+  else if(p_tdb_act->hdb.isr_status == OSEE_FALSE)
   {
     ev = E_OS_NOFUNC;
   }
   else
-*/
   {
     osEE_hal_disableIRQsource(p_tdb_act->hdb.isr2_src);
     ev = E_OK;
@@ -4610,19 +4610,16 @@ EnableInterruptSource
 		if (!osEE_is_valid_tid(p_kdb, ISRID)) {
 			ev = E_OS_ID;
 		}
-		else
-			/* if()
-			  {
-				ev = E_OS_NOFUNC;
-			  }
-			  else
-			*/
-		{
-			osEE_hal_enableIRQ_source(p_tdb_act->hdb.isr2_src);
-			if (ClearPendingInterrupt)
-			{
-				/*TODO*/
-			}
+		else if(p_tdb_act->hdb.isr_status == OSEE_TRUE)
+				{
+					ev = E_OS_NOFUNC;
+				}
+		else{
+				osEE_hal_enableIRQ_source(p_tdb_act->hdb.isr2_src);
+				if (ClearPendingInterrupt)
+				{
+					/*TODO*/
+				}
 			
 
 			ev = E_OK;
