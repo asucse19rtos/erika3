@@ -294,52 +294,93 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE osEE_hal_suspendIRQ(void)
 }
 
 /*Disable Interrupt source*/
-OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_disableIRQsource(OsEE_isr_src_id src_id)
+OSEE_STATIC_INLINE StatusType OSEE_ALWAYS_INLINE osEE_hal_disableIRQsource(OsEE_isr_src_id src_id)
 {
+  
 	switch (src_id)
 	{
 	case OSEE_TC_SRC_GPT120T2:
+  if(SRC_GPT120T2.B.SRE == 0)
+    {
+      return E_OS_NOFUNC;
+    }
 		SRC_GPT120T2.B.SRE = 0;
 		break;
 	case OSEE_TC_SRC_GPT120T3:
+  if(SRC_GPT120T3.B.SRE == 0)
+    {
+      return E_OS_NOFUNC;
+    }
 		SRC_GPT120T3.B.SRE = 0;
 		break;
 	case OSEE_TC_SRC_GPT120T4:
+  if(SRC_GPT120T4.B.SRE == 0)
+    {
+      return E_OS_NOFUNC;
+    }
 		SRC_GPT120T4.B.SRE = 0;
 		break;
 	case OSEE_TC_SRC_GPT120T5:
+  if(SRC_GPT120T5.B.SRE == 0)
+    {
+      return E_OS_NOFUNC;
+    }
 		SRC_GPT120T5.B.SRE = 0;
 		break;
 	case OSEE_TC_SRC_GPT120T6:
+  if(SRC_GPT120T6.B.SRE == 0)
+    {
+      return E_OS_NOFUNC;
+    }
 		SRC_GPT120T6.B.SRE = 0;
 		break;
 
 	}
-	
+	return E_OK;
 }
 
 /* Enable Interrupt source */
-OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_enableIRQ_source(OsEE_isr_src_id src_id)
+OSEE_STATIC_INLINE StatusType OSEE_ALWAYS_INLINE osEE_hal_enableIRQ_source(OsEE_isr_src_id src_id)
 {
 	switch (src_id)
 	{
 	case OSEE_TC_SRC_GPT120T2:
+  if(SRC_GPT120T2.B.SRE == 1)
+    {
+      return E_OS_NOFUNC;
+    }
 		SRC_GPT120T2.B.SRE = 1;
 		break;
 	case OSEE_TC_SRC_GPT120T3:
+  if(SRC_GPT120T3.B.SRE == 1)
+    {
+      return E_OS_NOFUNC;
+    }
 		SRC_GPT120T3.B.SRE = 1;
 		break;
 	case OSEE_TC_SRC_GPT120T4:
+  if(SRC_GPT120T4.B.SRE == 1)
+    {
+      return E_OS_NOFUNC;
+    }
 		SRC_GPT120T4.B.SRE = 1;
 		break;
 	case OSEE_TC_SRC_GPT120T5:
+  if(SRC_GPT120T5.B.SRE == 1)
+    {
+      return E_OS_NOFUNC;
+    }
 		SRC_GPT120T5.B.SRE = 1;
 		break;
 	case OSEE_TC_SRC_GPT120T6:
+  if(SRC_GPT120T6.B.SRE == 1)
+    {
+      return E_OS_NOFUNC;
+    }
 		SRC_GPT120T6.B.SRE = 1;
 		break;
 	}
-
+  return E_OK;
 }
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_resumeIRQ(OsEE_reg flags)

@@ -100,7 +100,7 @@ OSEE_STATIC_INLINE OsEE_uint16  OSEE_ALWAYS_INLINE
   osEE_ATmega_Reg16Read(OSEE_HWREG_PTR Address)
 {
   register OsEE_uint16  ret = OSEE_HWREG(Address++);
-  ret |= ((OsEE_uint16)EE_HWREG(Address) << OSEE_LOW_BYTE_SH_BITS);
+  ret |= ((OsEE_uint16)OSEE_HWREG(Address) << OSEE_LOW_BYTE_SH_BITS);
   return ret;
 }
 
@@ -108,7 +108,7 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
   osEE_ATmega_Reg16Write(OSEE_HWREG_PTR Address, OsEE_uint16 Data)
 {
   OSEE_HWREG(Address++) = (OsEE_reg)(Data);
-  OSEE_HWREG(Address)   = (OsEE_reg)(Data >> EE_LOW_BYTE_SH_BITS);
+  OSEE_HWREG(Address)   = (OsEE_reg)(Data >> OSEE_LOW_BYTE_SH_BITS);
 }
 
 /* True if we are inside an interrupt handler */

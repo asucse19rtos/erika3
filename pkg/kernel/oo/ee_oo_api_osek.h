@@ -1583,7 +1583,7 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   EnableInterruptSource
 ( 
-  ISRType ISRID,
+  VAR(ISRType, AUTOMATIC) ISRID,
   OsEE_bool ClearPending
 );
 
@@ -1610,7 +1610,7 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   DisableInterruptSource
 ( 
-  ISRType ISRID
+  VAR(ISRType, AUTOMATIC) ISRID
 );
 
 /**
@@ -1636,7 +1636,7 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   ClearPendingInterrupt
 ( 
-  ISRType ISRID
+  VAR(ISRType, AUTOMATIC) ISRID
 );
 
 #if (defined(OSEE_USEGETSERVICEID)) || (defined(OSEE_USEPARAMETERACCESS))
