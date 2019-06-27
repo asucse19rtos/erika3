@@ -4557,6 +4557,19 @@ FUNC(StatusType, OS_CODE)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 FUNC(StatusType, OS_CODE)
 EnableInterruptSource
 (
@@ -4635,6 +4648,100 @@ EnableInterruptSource
 	
 	return ev;
 }
+
+
+
+
+
+
+
+
+FUNC(StatusType, OS_CODE)
+ClearPendingInterrupt
+(
+	VAR(ISRType, AUTOMATIC) ISRID
+)
+{
+	/* Error Value */
+	VAR(StatusType, AUTOMATIC)  ev;
+	/** p_kdb pointer to the Kernel descriptor Block (This data structure is
+	 *  the "starting point" for navigating all the kernel data structures.) */
+	CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)  p_kdb = osEE_get_kernel();
+	/** p_cdb pointer to the Core Descriptor Block (The struct stores all
+	   *  the information related to the handling of a core in Flash) */
+	CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+		p_cdb = osEE_get_curr_core();
+	CONSTP2VAR(OsEE_TDB, AUTOMATIC, OS_APPL_DATA)
+		p_tdb_act = (*p_kdb->p_tdb_ptr_array)[ISRID];
+	/** p_tdb_act pointer to the Task Descriptor Block (It stores all the
+	 *  information related to the task that is configured statically) */
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+	CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+	CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
+		/** p_ccb pointer to the Core Control Block (The struct stores all
+		 *  the information related to the handling of a core in RAM) */
+		p_ccb = p_cdb->p_ccb;
+	//osEE_orti_trace_service_entry(p_ccb, OSServiceId_DisableInterruptSource);
+	osEE_stack_monitoring(p_cdb);
+
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+	/*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
+	 *    context AND is currently not inside a Category 1 ISR the Operating
+	 *    System module shall not perform the requested action
+	 *    (the service call shall have no effect), and return E_OS_CALLEVEL
+	 *    (see [12], section 13.1) or the "invalid value" of  the service.
+	 *    (SRS_Os_11009, SRS_Os_11013) */
+	 /* EnableInterruptSource is callable by Task and ISR2 */
+	   /* Checks if the running "item" context is Task or ISR2, returns E_OS_CALLEVEL
+		* if called from other. */
+	if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+	{
+		ev = E_OS_CALLEVEL;
+	}
+	else
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+		/* Checks if the desired task to be activated is valid, TaskID is defined
+		 * in the OIL. If invalid ID, returns E_OS_ID. */
+		if ((!osEE_is_valid_tid(p_kdb, ISRID))&&
+    (p_tdb_act->task_type != OSEE_TASK_TYPE_ISR2)) {
+			ev = E_OS_ID;
+		}
+		else {
+      CONST(OsEE_reg, AUTOMATIC)
+		  flags = osEE_begin_primitive();
+      //osEE_hal_clearpend_int(p_tdb_act->hdb.isr2_sourceid);
+      osEE_end_primitive(flags);
+      ev = E_OK;
+		}
+
+#if (defined(OSEE_HAS_ERRORHOOK))
+	if (ev != E_OK) {
+		CONST(OsEE_reg, AUTOMATIC)
+			flags = osEE_begin_primitive();
+		osEE_set_service_id(p_ccb, OSServiceId_ClearPendingInterrupt); /* Service caused the error. */
+		osEE_set_api_param1_num_param(p_ccb, ISRID);
+		osEE_call_error_hook(p_ccb, ev); /* Calls the error hook defined by the user. */
+		osEE_end_primitive(flags);
+	}
+#endif /* OSEE_HAS_ERRORHOOK */
+	
+	return ev;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

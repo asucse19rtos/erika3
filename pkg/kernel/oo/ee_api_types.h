@@ -821,6 +821,7 @@ typedef enum {
   OsId_Invalid                                = (86),
   OSServiceId_DisableInterruptSource          = (88),
   OSServiceId_EnableInterruptSource           = (90)
+  OSServiceId_ClearPendingInterrupt           = (92)
 } OsEE_service_id_type;
 
 /** This data type represents the identification of system services. */
