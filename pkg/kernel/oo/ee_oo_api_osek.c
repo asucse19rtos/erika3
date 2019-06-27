@@ -4485,7 +4485,7 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
   DisableInterruptSource
 ( 
-  ISRType ISRID
+  VAR(ISRType, AUTOMATIC) ISRID
 )
 {
   /* Error Value */
@@ -4519,7 +4519,7 @@ FUNC(StatusType, OS_CODE)
    *    (the service call shall have no effect), and return E_OS_CALLEVEL
    *    (see [12], section 13.1) or the "invalid value" of  the service.
    *    (SRS_Os_11009, SRS_Os_11013) */
-/* ActivateTask is callable by Task and ISR2 */ 
+/* DisableInterruptSource is callable by Task and ISR2 */ 
   /* Checks if the running "item" context is Task or ISR2, returns E_OS_CALLEVEL
    * if called from other. */
   if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
@@ -4529,18 +4529,17 @@ FUNC(StatusType, OS_CODE)
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
   /* Checks if the desired task to be activated is valid, TaskID is defined
    * in the OIL. If invalid ID, returns E_OS_ID. */
-  if (!osEE_is_valid_tid(p_kdb, ISRID)) 
+  if ((!osEE_is_valid_tid(p_kdb, ISRID)) &&
+   (p_tdb_act->task_type != OSEE_TASK_TYPE_ISR2)) 
   {
     ev = E_OS_ID;
   } 
-  else if(p_tdb_act->hdb.isr_status == OSEE_FALSE)
-  {
-    ev = E_OS_NOFUNC;
-  }
   else
   {
-    osEE_hal_disableIRQsource(p_tdb_act->hdb.isr2_src);
-    ev = E_OK;
+    CONST(OsEE_reg, AUTOMATIC)
+		  flags = osEE_begin_primitive();
+    ev = osEE_hal_disableIRQsource(p_tdb_act->hdb.isr2_src);
+    osEE_end_primitive(flags);
   }
 
 #if (defined(OSEE_HAS_ERRORHOOK))
@@ -4561,8 +4560,8 @@ FUNC(StatusType, OS_CODE)
 FUNC(StatusType, OS_CODE)
 EnableInterruptSource
 (
-	ISRType ISRID,
-	OsEE_bool ClearPending
+	VAR(ISRType, AUTOMATIC) ISRID,
+  VAR(OsEE_bool, AUTOMATIC) ClearPending
 )
 {
 	/* Error Value */
@@ -4596,7 +4595,7 @@ EnableInterruptSource
 	 *    (the service call shall have no effect), and return E_OS_CALLEVEL
 	 *    (see [12], section 13.1) or the "invalid value" of  the service.
 	 *    (SRS_Os_11009, SRS_Os_11013) */
-	 /* ActivateTask is callable by Task and ISR2 */
+	 /* EnableInterruptSource is callable by Task and ISR2 */
 	   /* Checks if the running "item" context is Task or ISR2, returns E_OS_CALLEVEL
 		* if called from other. */
 	if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
@@ -4607,22 +4606,20 @@ EnableInterruptSource
 #endif /* OSEE_HAS_SERVICE_PROTECTION */
 		/* Checks if the desired task to be activated is valid, TaskID is defined
 		 * in the OIL. If invalid ID, returns E_OS_ID. */
-		if (!osEE_is_valid_tid(p_kdb, ISRID)) {
+		if ((!osEE_is_valid_tid(p_kdb, ISRID))&&
+    (p_tdb_act->task_type != OSEE_TASK_TYPE_ISR2)) {
 			ev = E_OS_ID;
 		}
-		else if(p_tdb_act->hdb.isr_status == OSEE_TRUE)
-				{
-					ev = E_OS_NOFUNC;
-				}
-		else{
-				osEE_hal_enableIRQ_source(p_tdb_act->hdb.isr2_src);
-				if (ClearPendingInterrupt)
-				{
-					/*TODO*/
-				}
-			
-
-			ev = E_OK;
+		else {
+      CONST(OsEE_reg, AUTOMATIC)
+		  flags = osEE_begin_primitive();
+      osEE_hal_enableIRQsource(p_tdb_act->hdb.isr2_src);
+      osEE_end_primitive(flags);
+      if (ClearPendingInterrupt)
+      {
+        /*TODO*/
+      }
+      ev = E_OK;
 		}
 
 #if (defined(OSEE_HAS_ERRORHOOK))
