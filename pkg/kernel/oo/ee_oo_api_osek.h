@@ -1300,6 +1300,37 @@ FUNC(StatusType, OS_CODE)
 );
 
 
+/**
+ *  \brief Starts a Schedule Table synchronus.
+ *  \ingroup primitives-schtable 
+ *
+ *  This service set the status of the schedule table to waiting state
+ * and waits for a call to SyncScheduleTable to statr synchronization
+ * 
+ *
+ *  
+ *  Sync/Async: Synchronous
+ *  
+ *  Reentrancy: Reentrant
+ *
+ *  Reference: AUTOSAR OS 8.4.14 StartScheduleTableSynchron [SWS_Os_00201] 
+ *  
+ *  \param [in] ScheduleTableID Schedule table to be synchronized
+ *  
+ *
+ *  \return The function returns a StatusType.
+ *          - E_OK No errors
+ *          - E_OS_ID (Extended) The ScheduleTableID was not valid 
+ *          - E_OS_STATE Schedule table was already started
+ *            
+ */
+
+FUNC(StatusType, OS_CODE)
+StartScheduleTableSynchron
+(
+    VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID
+);
+
 /*  (not yet supported)
  *  \brief This service starts an explicitly synchronized schedule table
  *    synchronously.
@@ -1334,6 +1365,8 @@ FUNC(StatusType, OS_CODE)
  *          - E_OK No Error
  *          - E_OS_ID (Extended) Invalid ScheduleTableID
  */
+
+
 #endif /* OSEE_HAS_SCHEDULE_TABLES */
 
 

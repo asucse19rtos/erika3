@@ -3621,6 +3621,104 @@ FUNC(StatusType, OS_CODE)
   return ev;
 }
 
+FUNC(StatusType, OS_CODE)
+StartScheduleTableSynchron(
+    VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID)
+{
+  VAR(StatusType, AUTOMATIC)
+  ev;
+  CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
+  p_kdb = osEE_get_kernel(); /*get kernel descriptor block*/
+
+  CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
+  p_cdb = osEE_get_curr_core(); /*get core descriptor block*/
+#if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
+  CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#else
+  CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
+#endif                  /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
+  p_ccb = p_cdb->p_ccb; /*get core control block*/
+
+  osEE_orti_trace_service_entry(p_ccb, OSServiceId_SyncScheduleTable);
+  osEE_stack_monitoring(p_cdb);
+#if (defined(OSEE_HAS_SERVICE_PROTECTION))
+  /*  [SWS_Os_00093]: If interrupts are disabled/suspended by a Task/OsIsr and
+   *    the Task/OsIsr calls any OS service (excluding the interrupt services)
+   *    then the Operating System shall ignore the service AND shall return
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /*  [SWS_Os_00088]: If an OS-Application makes a service call from the wrong
+   *    context AND is currently not inside a Category 1 ISR the Operating
+   *    System module shall not perform the requested action
+   *    (the service call shall have no effect), and return E_OS_CALLEVEL
+   *    (see [12], section 13.1) or the "invalid value" of  the service.
+   *    (SRS_Os_11009, SRS_Os_11013) */
+  /* NextScheduleTable is callable by Task and ISR2 */
+  if (osEE_check_disableint(p_ccb))
+  {
+    ev = E_OS_DISABLEDINT;
+  }
+  else if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
+  {
+    ev = E_OS_CALLEVEL;
+  }
+  else
+
+#endif /* OSEE_HAS_SERVICE_PROTECTION */
+
+      /*If in a call of StartScheduleTableSynchron() the schedule
+  table <ScheduleTableID> is not valid OR the schedule table <ScheduleTableID> is
+  not explicitly synchronized (OsScheduleTblSyncStrategy != EXPLICIT)
+  StartScheduleTableSynchron() shall return E_OS_ID. */
+      if (!osEE_is_valid_st_id(p_kdb, ScheduleTableID))
+  {
+    ev = E_OS_ID;
+  }
+  else
+  {
+    CONSTP2VAR(OsEE_SchedTabDB, AUTOMATIC, OS_APPL_CONST)
+    p_st_db = (*p_kdb->p_st_ptr_array)[ScheduleTableID];
+    CONST(OsEE_reg, AUTOMATIC)
+    flags = osEE_begin_primitive();
+#if (defined(OSEE_HAS_CHECKS))
+    /* [SWS_Os_00387] ⌈If in a call of StartScheduleTableSynchron() the schedule
+   table <ScheduleTableID> is not valid OR the schedule table <ScheduleTableID> is
+   not explicitly synchronized (OsScheduleTblSyncStrategy != EXPLICIT)
+   StartScheduleTableSynchron() shall return E_OS_ID. */
+    /* [SWS_Os_00388] If the schedule table <ScheduleTableID> in a call of
+   StartScheduleTableSynchron()is not in the state SCHEDULETABLE_STOPPED,
+   StartScheduleTableSynchron() shall return E_OS_STATE. */
+    if (p_st_db->sync_strategy != OSEE_SCHEDTABLE_SYNC_EXPLICIT)
+    {
+      ev = E_OS_ID;
+    }
+    else
+      else if (osEE_st_get_cb(p_st_db)->st_status != SCHEDULETABLE_STOPPED)
+      {
+        ev = E_OS_STATE;
+      }
+    else
+#endif /* OSEE_HAS_CHECKS */
+{
+        osEE_st_get_cb(p_st_db)->st_status = SCHEDULETABLE_WAITING;            
+}
+
+    osEE_end_primitive(flags);
+  }
+#if (defined(OSEE_HAS_ERRORHOOK))
+  if (ev != E_OK)
+  {
+    CONST(OsEE_reg, AUTOMATIC)
+    flags = osEE_begin_primitive();
+    osEE_set_api_param1_num_param(p_ccb, ScheduleTableID);
+    osEE_set_api_param2_num_param(p_ccb, Value);
+    osEE_call_error_hook(p_ccb, ev);
+    osEE_end_primitive(flags);
+  }
+#endif /* OSEE_HAS_ERRORHOOK */
+  osEE_orti_trace_service_exit(p_ccb, OSServiceId_SyncScheduleTable);
+
+  return ev;
+}
 
 #endif /* OSEE_HAS_SCHEDULE_TABLES */
 
