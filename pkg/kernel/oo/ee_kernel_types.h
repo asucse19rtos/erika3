@@ -307,7 +307,7 @@ typedef struct {
 #if (defined(OSEE_HAS_ALARMS)) && (defined(OSEE_HAS_SCHEDULE_TABLES))
 /**
  *  If the application contains both Alarms and Schedule Tables, then the 
- *  Trigger queue OsEE_TriggerQ will distinguis among the two types of objects.
+ *  Trigger queue OsEE_TriggerQ will distinguish among the two types of objects.
  *  If there is only one kind of object, then we use an optimized 
  *  implementation.
  */

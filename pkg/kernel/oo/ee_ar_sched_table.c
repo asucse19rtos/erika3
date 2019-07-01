@@ -51,6 +51,7 @@
 
 #include "ee_internal.h"
 
+
 FUNC(StatusType, OS_CODE)
   osEE_st_start_rel
 (
@@ -331,11 +332,46 @@ FUNC(StatusType, OS_CODE)
     }
 
     p_st_cb->deviation = temp_deviation;
-  } else {
+  } else
+      if ((p_st_cb->st_status & SCHEDULETABLE_WAITING) == SCHEDULETABLE_WAITING) {
     /* Otherwise is waiting for synchronization before start
        (p_schedule_table_RAM->status == SCHEDULETABLE_WAITING) */
     /* TODO: handle Schedule Table Synchronous Start */
-  }
+      VAR(TickType,   TYPEDEF)    SyncOffset = p_trigger_db->duration - value;
 
+#if (!defined(OSEE_SINGLECORE))
+    CONST(CoreIdType, AUTOMATIC)
+    counter_core_id = p_counter_db->core_id;
+    /* Lock the Core Lock witch the counter is tied */
+    osEE_lock_core_id(counter_core_id);
+#endif /* OSEE_SINGLECORE */
+
+/* Initialize ST data structure
+   (Even though the ST is Reenabled it has to restart from the beginning) */
+    p_st_cb->p_next_table = NULL;
+    p_st_cb->position     = 0U;
+    p_st_cb->deviation    = 0;
+    p_st_cb->st_status    =
+    p_st_db->sync_strategy ==  SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS;
+    p_st_cb->start        = SyncOffset;
+
+    if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
+      /* Re-turn on the trigger, that is in handling, since is handling I'll set
+         here 'when' based on start */
+      p_trigger_cb->when   = start;
+      p_trigger_cb->status = OSEE_TRIGGER_REENABLED;
+    } else {
+      /* Turn On the Trigger */
+      p_trigger_cb->status = OSEE_TRIGGER_ACTIVE;
+      /*set trigger to (start + initial offset)*/
+
+      osEE_counter_insert_abs_trigger(p_counter_db, p_trigger_db,
+        SyncOffset + (*p_st_db->p_expiry_point_array)[0].offset
+      );
+    }
+#if (!defined(OSEE_SINGLECORE))
+  osEE_unlock_core_id(counter_core_id);
+#endif /* OSEE_SINGLECORE */
+  }
   return E_OK;
 }
