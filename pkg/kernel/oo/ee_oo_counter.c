@@ -480,9 +480,10 @@ FUNC(void, OS_CODE)
 )
 {
   CONSTP2VAR(OsEE_CounterCB, AUTOMATIC, OS_APPL_DATA)
-    p_counter_cb = p_counter_db->p_counter_cb;
+    p_counter_cb = p_counter_db->p_counter_cb; /**< counter control block */
 
 #if (defined(OSEE_HAS_COUNTER_PRESCALER))
+  /** Number of hardware ticks required to reach a counter-specific (significant) unit. */
   CONST(TickType, AUTOMATIC)
     ticksperbase = p_counter_db->info.ticksperbase;
   VAR(OsEE_bool, AUTOMATIC)
