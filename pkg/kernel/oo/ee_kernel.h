@@ -192,7 +192,7 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
   P2CONST(OsEE_TCB, AUTOMATIC, OS_APPL_DATA)  p_tcb
 )
 {
-  return (p_tcb->status > OSEE_TASK_READY);
+  return (OsEE_bool)(p_tcb->status > OSEE_TASK_READY);
 }
 
 FUNC(void, OS_CODE)
@@ -284,9 +284,9 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
 )
 {
 #if (defined(OSEE_API_DYNAMIC))
-  return (tid < p_kdb->p_kcb->free_task_index);
+  return (OsEE_bool)(tid < p_kdb->p_kcb->free_task_index);
 #else
-  return (tid < p_kdb->tdb_array_size);
+  return (OsEE_bool)(tid < p_kdb->tdb_array_size);
 #endif /* OSEE_API_DYNAMIC */
 }
 
@@ -299,9 +299,9 @@ LOCAL_INLINE FUNC(OsEE_bool, OS_CODE)
 )
 {
 #if (defined(OSEE_API_DYNAMIC))
-  return (res_id < p_kdb->p_kcb->free_res_index);
+  return (OsEE_bool)(res_id < p_kdb->p_kcb->free_res_index);
 #else
-  return (res_id < p_kdb->res_array_size);
+  return (OsEE_bool)(res_id < p_kdb->res_array_size);
 #endif /* OSEE_API_DYNAMIC */
 }
 #endif /* OSEE_HAS_RESOURCES */

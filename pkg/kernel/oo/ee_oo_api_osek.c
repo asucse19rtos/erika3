@@ -4632,11 +4632,16 @@ FUNC(StatusType, OS_CODE)
   {
     ev = E_OS_ID;
   } 
+  else if(p_tdb_act->p_tcb->isr2_src_status == OSEE_ISR2SOURCE_DISABLED)
+  {
+    ev = E_OS_NOFUNC;
+  }
   else
   {
     CONST(OsEE_reg, AUTOMATIC)
 		  flags = osEE_begin_primitive();
-    ev = osEE_hal_disableIRQsource(p_tdb_act->hdb.isr2_src);
+    osEE_hal_disableIRQsource(p_tdb_act->hdb.isr2_src);
+    p_tdb_act->p_tcb->isr2_src_status = OSEE_ISR2SOURCE_DISABLED;
     osEE_end_primitive(flags);
   }
 
@@ -4653,20 +4658,6 @@ FUNC(StatusType, OS_CODE)
 
   return ev;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 FUNC(StatusType, OS_CODE)
 EnableInterruptSource
@@ -4721,15 +4712,20 @@ EnableInterruptSource
     (p_tdb_act->task_type != OSEE_TASK_TYPE_ISR2)) {
 			ev = E_OS_ID;
 		}
+    else if(p_tdb_act->p_tcb->isr2_src_status == OSEE_ISR2SOURCE_ENABLED)
+    {
+      ev = E_OS_NOFUNC;
+    }
 		else {
       CONST(OsEE_reg, AUTOMATIC)
 		  flags = osEE_begin_primitive();
       osEE_hal_enableIRQsource(p_tdb_act->hdb.isr2_src);
-      osEE_end_primitive(flags);
       if (ClearPendingInterrupt)
       {
-        /*TODO*/
+        osEE_hal_clearpend_int(p_tdb_act->hdb.isr2_src);
       }
+      p_tdb_act->p_tcb->isr2_src_status = OSEE_ISR2SOURCE_ENABLED;
+      osEE_end_primitive(flags);
       ev = E_OK;
 		}
 
@@ -4746,13 +4742,6 @@ EnableInterruptSource
 	
 	return ev;
 }
-
-
-
-
-
-
-
 
 FUNC(StatusType, OS_CODE)
 ClearPendingInterrupt
@@ -4809,7 +4798,7 @@ ClearPendingInterrupt
 		else {
       CONST(OsEE_reg, AUTOMATIC)
 		  flags = osEE_begin_primitive();
-      //osEE_hal_clearpend_int(p_tdb_act->hdb.isr2_sourceid);
+      osEE_hal_clearpend_int(p_tdb_act->hdb.isr2_src);
       osEE_end_primitive(flags);
       ev = E_OK;
 		}
@@ -4827,22 +4816,6 @@ ClearPendingInterrupt
 	
 	return ev;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #if (defined(OSEE_USEGETSERVICEID)) || (defined(OSEE_USEPARAMETERACCESS))
 FUNC(OSServiceIdType, OS_CODE)
