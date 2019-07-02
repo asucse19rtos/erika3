@@ -229,6 +229,24 @@ typedef OSEE_TASK_PRIO_TYPE                     TaskPrio;
  *  This type stores an interrupt source type.
  */
 typedef OSEE_ISR_SOURCE_TYPE                    ISRSource;
+/**
+ *  \brief These are the ISR2-source statuses that an ISR2/Task can have
+ *  during its lifetime.
+ */
+typedef enum {
+  /** \brief Status of an ISR2-source that's is enabled */
+  OSEE_ISR2SOURCE_ENABLED,
+  /** \brief Status of an ISR2-source that's is disabled */
+  OSEE_ISR2SOURCE_DISABLED,
+  /** \brief Status of an ISR2-source that's is invalid */
+  OSEE_ISR2SOURCE_INVALID
+} OsEE_ISR2_source_status;
+/**
+ *  \brief This type stores an interrupt source status.
+ *  \ingroup primitives-interrupt
+ *  This type stores an interrupt source status.
+ */
+typedef OsEE_ISR2_source_status                    ISR2SourceStatus;
 
 #if (!defined(OSEE_TASK_ACTIVATION_TYPE))
 /**
@@ -820,7 +838,8 @@ typedef enum {
   OSId_Kernel                                 = (84),
   OsId_Invalid                                = (86),
   OSServiceId_DisableInterruptSource          = (88),
-  OSServiceId_EnableInterruptSource           = (90)
+  OSServiceId_EnableInterruptSource           = (90),
+  OSServiceId_ClearPendingInterrupt           = (92)
 } OsEE_service_id_type;
 
 /** This data type represents the identification of system services. */

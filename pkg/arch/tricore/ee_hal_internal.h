@@ -293,101 +293,87 @@ OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE osEE_hal_suspendIRQ(void)
   return icr.reg;
 }
 
-/*Disable Interrupt source*/
-OSEE_STATIC_INLINE StatusType OSEE_ALWAYS_INLINE osEE_hal_disableIRQsource(OsEE_isr_src_id src_id)
-{
-  
-	switch (src_id)
-	{
-	case OSEE_TC_SRC_GPT120T2:
-  if(SRC_GPT120T2.B.SRE == 0)
-    {
-      return E_OS_NOFUNC;
-    }
-		SRC_GPT120T2.B.SRE = 0;
-		break;
-	case OSEE_TC_SRC_GPT120T3:
-  if(SRC_GPT120T3.B.SRE == 0)
-    {
-      return E_OS_NOFUNC;
-    }
-		SRC_GPT120T3.B.SRE = 0;
-		break;
-	case OSEE_TC_SRC_GPT120T4:
-  if(SRC_GPT120T4.B.SRE == 0)
-    {
-      return E_OS_NOFUNC;
-    }
-		SRC_GPT120T4.B.SRE = 0;
-		break;
-	case OSEE_TC_SRC_GPT120T5:
-  if(SRC_GPT120T5.B.SRE == 0)
-    {
-      return E_OS_NOFUNC;
-    }
-		SRC_GPT120T5.B.SRE = 0;
-		break;
-	case OSEE_TC_SRC_GPT120T6:
-  if(SRC_GPT120T6.B.SRE == 0)
-    {
-      return E_OS_NOFUNC;
-    }
-		SRC_GPT120T6.B.SRE = 0;
-		break;
-
-	}
-	return E_OK;
-}
-
-/* Enable Interrupt source */
-OSEE_STATIC_INLINE StatusType OSEE_ALWAYS_INLINE osEE_hal_enableIRQ_source(OsEE_isr_src_id src_id)
-{
-	switch (src_id)
-	{
-	case OSEE_TC_SRC_GPT120T2:
-  if(SRC_GPT120T2.B.SRE == 1)
-    {
-      return E_OS_NOFUNC;
-    }
-		SRC_GPT120T2.B.SRE = 1;
-		break;
-	case OSEE_TC_SRC_GPT120T3:
-  if(SRC_GPT120T3.B.SRE == 1)
-    {
-      return E_OS_NOFUNC;
-    }
-		SRC_GPT120T3.B.SRE = 1;
-		break;
-	case OSEE_TC_SRC_GPT120T4:
-  if(SRC_GPT120T4.B.SRE == 1)
-    {
-      return E_OS_NOFUNC;
-    }
-		SRC_GPT120T4.B.SRE = 1;
-		break;
-	case OSEE_TC_SRC_GPT120T5:
-  if(SRC_GPT120T5.B.SRE == 1)
-    {
-      return E_OS_NOFUNC;
-    }
-		SRC_GPT120T5.B.SRE = 1;
-		break;
-	case OSEE_TC_SRC_GPT120T6:
-  if(SRC_GPT120T6.B.SRE == 1)
-    {
-      return E_OS_NOFUNC;
-    }
-		SRC_GPT120T6.B.SRE = 1;
-		break;
-	}
-  return E_OK;
-}
-
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_resumeIRQ(OsEE_reg flags)
 {
   OsEE_icr icr;
   icr.reg = flags;
   osEE_tc_set_icr(icr);
+}
+
+/*Disable Interrupt source*/
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE 
+osEE_hal_disableIRQsource(OsEE_isr_src_id src_id)
+{
+	switch (src_id)
+	{
+	case OSEE_TC_SRC_GPT120T2:
+		SRC_GPT120T2.B.SRE = 0;
+		break;
+	case OSEE_TC_SRC_GPT120T3:
+		SRC_GPT120T3.B.SRE = 0;
+		break;
+	case OSEE_TC_SRC_GPT120T4:
+		SRC_GPT120T4.B.SRE = 0;
+		break;
+	case OSEE_TC_SRC_GPT120T5:
+		SRC_GPT120T5.B.SRE = 0;
+		break;
+	case OSEE_TC_SRC_GPT120T6:
+		SRC_GPT120T6.B.SRE = 0;
+		break;
+	}
+}
+
+/* Enable Interrupt source */
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE 
+osEE_hal_enableIRQ_source(OsEE_isr_src_id src_id)
+{
+	switch (src_id)
+	{
+	case OSEE_TC_SRC_GPT120T2:
+		SRC_GPT120T2.B.SRE = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T3:
+		SRC_GPT120T3.B.SRE = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T4:
+		SRC_GPT120T4.B.SRE = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T5:
+		SRC_GPT120T5.B.SRE = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T6:
+		SRC_GPT120T6.B.SRE = 1;
+		break;
+	}
+}
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE 
+osEE_hal_clearpend_int(OsEE_isr_src_id src_id)
+{
+	switch (src_id)
+	{
+	case OSEE_TC_SRC_GPT120T2:
+    SRC_GPT120T2.B.IOVCLR = 1;
+	  SRC_GPT120T2.B.CLRR = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T3:
+    SRC_GPT120T3.B.IOVCLR = 1;
+	  SRC_GPT120T3.B.CLRR = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T4:
+    SRC_GPT120T4.B.IOVCLR = 1;
+	  SRC_GPT120T4.B.CLRR = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T5:
+    SRC_GPT120T5.B.IOVCLR = 1;
+	  SRC_GPT120T5.B.CLRR = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T6:
+    SRC_GPT120T6.B.IOVCLR = 1;
+	  SRC_GPT120T6.B.CLRR = 1;
+		break;
+	}
 }
 
 OSEE_STATIC_INLINE FUNC(uint8_t, OS_CODE) OSEE_ALWAYS_INLINE

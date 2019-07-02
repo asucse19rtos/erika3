@@ -88,9 +88,9 @@ FUNC(void, OS_CODE)
   P2VAR(OsEE_TriggerDB, AUTOMATIC, OS_APPL_DATA)
     p_current     = p_counter_cb->trigger_queue;/**< pointer to current trigger DB and initialize it to the first one in the trigger queue*/
   CONST(TickType, AUTOMATIC)
-    counter_value = p_counter_cb->value;/**< current counter value*/
+    counter_value = p_counter_cb->value; /**< current counter value*/
   VAR(OsEE_bool, AUTOMATIC)
-    work_not_done = OSEE_TRUE;/**< boolean that work is not done yet*/
+    work_not_done = OSEE_TRUE; /**< boolean that work is not done yet*/
 
   /* Update Trigger Status */
   p_trigger_db->p_trigger_cb->when   = when;

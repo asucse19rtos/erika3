@@ -254,6 +254,8 @@ typedef struct {
   /** current core id where the task is currently running */
   VAR(CoreIdType, TYPEDEF)                      current_core_id;
 #endif /* OSEE_ALLOW_TASK_MIGRATION */
+  /** ISR2 source status */
+  VAR(ISR2SourceStatus, TYPEDEF)                isr2_src_status;
 } OsEE_TCB;
 
 /**
