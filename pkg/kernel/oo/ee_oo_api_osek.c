@@ -2648,24 +2648,28 @@ FUNC(StatusType, OS_CODE)
 
   return ev;
 }
-
+/**
+ * @brief This service increments a software counter
+ * @param[in] CounterID The Counter to be incremented
+ * @return StatusType
+ */ 
 FUNC(StatusType, OS_CODE)
   IncrementCounter
 (
   VAR(CounterType, AUTOMATIC) CounterID
 )
 {
-  VAR(StatusType, AUTOMATIC)  ev;
+  VAR(StatusType, AUTOMATIC)  ev; /**< the returned status */
   CONSTP2VAR(OsEE_KDB, AUTOMATIC, OS_APPL_CONST)
-    p_kdb = osEE_get_kernel();
+    p_kdb = osEE_get_kernel(); /**< kernel descriptor block */
   CONSTP2VAR(OsEE_CDB, AUTOMATIC, OS_APPL_CONST)
-    p_cdb = osEE_get_curr_core();
+    p_cdb = osEE_get_curr_core(); /**< core descriptor block */
 #if (!defined(OSEE_HAS_ORTI)) && (!defined(OSEE_HAS_ERRORHOOK))
   CONSTP2CONST(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #else
   CONSTP2VAR(OsEE_CCB, AUTOMATIC, OS_APPL_DATA)
 #endif /* !OSEE_HAS_ORTI && !OSEE_HAS_ERRORHOOK */
-    p_ccb = p_cdb->p_ccb;
+    p_ccb = p_cdb->p_ccb; /**< core control block */
 
   osEE_orti_trace_service_entry(p_ccb, OSServiceId_IncrementCounter);
   osEE_stack_monitoring(p_cdb);
@@ -2684,7 +2688,7 @@ FUNC(StatusType, OS_CODE)
 /* IncrementCounter is callable by Task and ISR2 */
   if (osEE_check_disableint(p_ccb)) {
     ev = E_OS_DISABLEDINT;
-  } else
+  } else/* if called not from kernel or IDLE or Task or Task ISR2 context return E_OS_CALLEVEL error */
   if (p_ccb->os_context > OSEE_TASK_ISR2_CTX)
   {
     ev = E_OS_CALLEVEL;
