@@ -351,8 +351,7 @@ FUNC(StatusType, OS_CODE)
     p_st_cb->p_next_table = NULL;
     p_st_cb->position     = 0U;
     p_st_cb->deviation    = 0;
-    p_st_cb->st_status    =
-    p_st_db->sync_strategy ==  SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS;
+    p_st_cb->st_status    = SCHEDULETABLE_RUNNING_AND_SYNCHRONOUS;
     p_st_cb->start        = SyncOffset;
 
     if (p_trigger_cb->status == OSEE_TRIGGER_CANCELED) {
@@ -369,7 +368,7 @@ FUNC(StatusType, OS_CODE)
         SyncOffset + (*p_st_db->p_expiry_point_array)[0].offset
       );
     }
-  p_st_cb->deviation = SyncOffset;
+
 #if (!defined(OSEE_SINGLECORE))
   osEE_unlock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
