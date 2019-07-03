@@ -369,6 +369,7 @@ FUNC(StatusType, OS_CODE)
         SyncOffset + (*p_st_db->p_expiry_point_array)[0].offset
       );
     }
+  p_st_cb->deviation = SyncOffset;
 #if (!defined(OSEE_SINGLECORE))
   osEE_unlock_core_id(counter_core_id);
 #endif /* OSEE_SINGLECORE */
