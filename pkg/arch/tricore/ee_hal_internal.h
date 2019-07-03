@@ -326,7 +326,7 @@ osEE_hal_disableIRQsource(OsEE_isr_src_id src_id)
 
 /* Enable Interrupt source */
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE 
-osEE_hal_enableIRQ_source(OsEE_isr_src_id src_id)
+osEE_hal_enableIRQsource(OsEE_isr_src_id src_id)
 {
 	switch (src_id)
 	{

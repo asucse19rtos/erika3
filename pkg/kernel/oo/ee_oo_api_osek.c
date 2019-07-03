@@ -4829,7 +4829,7 @@ EnableInterruptSource
       CONST(OsEE_reg, AUTOMATIC)
 		  flags = osEE_begin_primitive();
       osEE_hal_enableIRQsource(p_tdb_act->hdb.isr2_src);
-      if (ClearPendingInterrupt)
+      if (ClearPending)
       {
         osEE_hal_clearpend_int(p_tdb_act->hdb.isr2_src);
       }
