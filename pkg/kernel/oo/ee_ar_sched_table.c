@@ -338,7 +338,9 @@ FUNC(StatusType, OS_CODE)
     /* Otherwise is waiting for synchronization before start
        (p_schedule_table_RAM->status == SCHEDULETABLE_WAITING) */
     /* TODO: handle Schedule Table Synchronous Start */
-      VAR(TickType,   TYPEDEF)    SyncOffset = p_trigger_db->duration - value +p_counter_cb->value;
+      VAR(TickType,   TYPEDEF)    
+      SyncOffset = (p_trigger_db->duration - value +p_counter_cb->value) % p_trigger_db->duration;
+    
 
 #if (!defined(OSEE_SINGLECORE))
     CONST(CoreIdType, AUTOMATIC)
