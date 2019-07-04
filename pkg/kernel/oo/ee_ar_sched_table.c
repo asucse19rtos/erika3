@@ -240,7 +240,8 @@ FUNC(StatusType, OS_CODE)
     p_trigger_cb = p_trigger_db->p_trigger_cb;
   CONSTP2VAR(OsEE_SchedTabCB, AUTOMATIC, OS_APPL_DATA)
     p_st_cb = osEE_st_get_cb(p_st_db);
-
+  CONSTP2VAR(OsEE_CounterCB, AUTOMATIC, OS_APPL_CONST)      
+    p_counter_cb = p_counter_db->p_counter_cb;
 /* Check if the ScheduleTable is Started */
   if ((p_st_cb->st_status & SCHEDULETABLE_RUNNING) == SCHEDULETABLE_RUNNING) {
 /* Schedule Table position locals */
@@ -337,7 +338,7 @@ FUNC(StatusType, OS_CODE)
     /* Otherwise is waiting for synchronization before start
        (p_schedule_table_RAM->status == SCHEDULETABLE_WAITING) */
     /* TODO: handle Schedule Table Synchronous Start */
-      VAR(TickType,   TYPEDEF)    SyncOffset = p_trigger_db->duration - value;
+      VAR(TickType,   TYPEDEF)    SyncOffset = p_trigger_db->duration - value +p_counter_cb->value;
 
 #if (!defined(OSEE_SINGLECORE))
     CONST(CoreIdType, AUTOMATIC)
