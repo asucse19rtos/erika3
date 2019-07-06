@@ -200,98 +200,98 @@ extern "C" {
 #define OSEE_AVR8_USART_UDRE_ISR_ID   0x1EU
 
 /* USART_TX interrupt vector */
-#define OSEE_AVR8_USART_TX_ISR_ID     0x0FU
+#define OSEE_AVR8_USART_TX_ISR_ID     0x1FU
 #endif  /* __AVR_ATmega328__ || __AVR_ATmega328P__ */
 
 /* ADC interrupt vector */
-#define OSEE_AVR8_ADC_ISR_ID          0x1FU
+#define OSEE_AVR8_ADC_ISR_ID          0x20U
 
 /* EE_READY interrupt vector */
-#define OSEE_AVR8_EE_READY_ISR_ID     0x20U
+#define OSEE_AVR8_EE_READY_ISR_ID     0x21U
 
 /* ANALOG_COMP interrupt vector */
-#define OSEE_AVR8_ANALOG_COMP_ISR_ID  0x21U
+#define OSEE_AVR8_ANALOG_COMP_ISR_ID  0x22U
 
 #if (defined(__AVR_ATmega128__)) || (defined(__AVR_ATmega1281__))
 /* TIMER3_CAPT interrupt vector */
-#define OSEE_AVR8_TIMER3_CAPT_ISR_ID  0x22U
+#define OSEE_AVR8_TIMER3_CAPT_ISR_ID  0x23U
 
 /* TIMER3_COMPA interrupt vector */
-#define OSEE_AVR8_TIMER3_COMPA_ISR_ID 0x23U
+#define OSEE_AVR8_TIMER3_COMPA_ISR_ID 0x24U
 
 /* TIMER3_COMPB interrupt vector */
-#define OSEE_AVR8_TIMER3_COMPB_ISR_ID 0x24U
+#define OSEE_AVR8_TIMER3_COMPB_ISR_ID 0x25U
 
 /* TIMER3_COMPC interrupt vector */
-#define OSEE_AVR8_TIMER3_COMPC_ISR_ID 0x25U
+#define OSEE_AVR8_TIMER3_COMPC_ISR_ID 0x26U
 
 /* TIMER3_OVF interrupt vector */
-#define OSEE_AVR8_TIMER3_OVF_ISR_ID   0x26U
+#define OSEE_AVR8_TIMER3_OVF_ISR_ID   0x27U
 
 /* USART1_RX interrupt vector */
-#define OSEE_AVR8_USART1_RX_ISR_ID    0x27U
+#define OSEE_AVR8_USART1_RX_ISR_ID    0x28U
 
 /* USART1_UDRE interrupt vector */
-#define OSEE_AVR8_USART1_UDRE_ISR_ID  0x28U
+#define OSEE_AVR8_USART1_UDRE_ISR_ID  0x29U
 
 /* USART1_TX interrupt vector */
-#define OSEE_AVR8_USART1_TX_ISR_ID    0x29U
+#define OSEE_AVR8_USART1_TX_ISR_ID    0x2AU
 #endif  /* __AVR_ATmega128__ || __AVR_ATmega1281__ */
 
 /* TWI interrupt vector */
-#define OSEE_AVR8_TWI_ISR_ID          0x2AU
+#define OSEE_AVR8_TWI_ISR_ID          0x2BU
 
 /* SPM_READY interrupt vector */
-#define OSEE_AVR8_SPM_READY_ISR_ID    0x2BU
+#define OSEE_AVR8_SPM_READY_ISR_ID    0x2CU
 
 #if (defined(__AVR_ATmega1281__))
 /* TIMER4_CAPT interrupt vector */
-#define OSEE_AVR8_TIMER4_CAPT_ISR_ID  0x2CU
+#define OSEE_AVR8_TIMER4_CAPT_ISR_ID  0x2DU
 
 /* TIMER4_COMPA interrupt vector */
-#define OSEE_AVR8_TIMER4_COMPA_ISR_ID 0x2DU
+#define OSEE_AVR8_TIMER4_COMPA_ISR_ID 0x2EU
 
 /* TIMER4_COMPB interrupt vector */
-#define OSEE_AVR8_TIMER4_COMPB_ISR_ID 0x2EU
+#define OSEE_AVR8_TIMER4_COMPB_ISR_ID 0x2FU
 
 /* TIMER4_COMPC interrupt vector */
-#define OSEE_AVR8_TIMER4_COMPC_ISR_ID 0x2FU
+#define OSEE_AVR8_TIMER4_COMPC_ISR_ID 0x30U
 
 /* TIMER4_OVF interrupt vector */
-#define OSEE_AVR8_TIMER4_OVF_ISR_ID   0x30U
+#define OSEE_AVR8_TIMER4_OVF_ISR_ID   0x31U
 
 /* TIMER5_CAPT interrupt vector */
-#define OSEE_AVR8_TIMER5_CAPT_ISR_ID  0x31U
+#define OSEE_AVR8_TIMER5_CAPT_ISR_ID  0x32U
 
 /* TIMER5_COMPA interrupt vector */
-#define OSEE_AVR8_TIMER5_COMPA_ISR_ID 0x32U
+#define OSEE_AVR8_TIMER5_COMPA_ISR_ID 0x33U
 
 /* TIMER5_COMPB interrupt vector */
-#define OSEE_AVR8_TIMER5_COMPB_ISR_ID 0x33U
+#define OSEE_AVR8_TIMER5_COMPB_ISR_ID 0x34U
 
 /* TIMER5_COMPC interrupt vector */
-#define OSEE_AVR8_TIMER5_COMPC_ISR_ID 0x34U
+#define OSEE_AVR8_TIMER5_COMPC_ISR_ID 0x35U
 
 /* TIMER5_OVF interrupt vector */
-#define OSEE_AVR8_TIMER5_OVF_ISR_ID   0x35U
+#define OSEE_AVR8_TIMER5_OVF_ISR_ID   0x36U
 
 /* USART2_RX interrupt vector */
-#define OSEE_AVR8_USART2_RX_ISR_ID    0x36U
+#define OSEE_AVR8_USART2_RX_ISR_ID    0x37U
 
 /* USART2_UDRE interrupt vector */
-#define OSEE_AVR8_USART2_UDRE_ISR_ID  0x37U
+#define OSEE_AVR8_USART2_UDRE_ISR_ID  0x38U
 
 /* USART2_TX interrupt vector */
-#define OSEE_AVR8_USART2_TX_ISR_ID    0x38U
+#define OSEE_AVR8_USART2_TX_ISR_ID    0x39U
 
 /* USART3_RX interrupt vector */
-#define OSEE_AVR8_USART3_RX_ISR_ID    0x39U
+#define OSEE_AVR8_USART3_RX_ISR_ID    0x3AU
 
 /* USART3_UDRE interrupt vector */
-#define OSEE_AVR8_USART3_UDRE_ISR_ID  0x3AU
+#define OSEE_AVR8_USART3_UDRE_ISR_ID  0x3BU
 
 /* USART3_TX interrupt vector */
-#define OSEE_AVR8_USART3_TX_ISR_ID    0x3BU
+#define OSEE_AVR8_USART3_TX_ISR_ID    0x3CU
 #endif  /* __AVR_ATmega1281__ */
 
 //#endif  /* OSEE_API_DYNAMIC */
