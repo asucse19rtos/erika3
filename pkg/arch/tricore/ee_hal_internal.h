@@ -67,6 +67,7 @@
 #include "ee_std_change_context.h"
 #include "ee_kernel_types.h"
 #include "ee_get_kernel_and_core.h"
+#include "inc/tc29xb/Ifx_Reg.h"
 #if (!defined(OSEE_TRICORE_ILLD))
 #include "ee_tc_system.h"
 #endif
@@ -256,12 +257,14 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE OsEE_icr OSEE_ALWAYS_INLINE osEE_tc_get_icr(void)
 {
   OsEE_icr icr;
+  // OSEE_CSFR_ICR is the Interrupt Control Register
   icr.reg = osEE_tc_get_csfr(OSEE_CSFR_ICR);
   return icr;
 }
 
 OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_tc_set_icr(OsEE_icr icr)
 {
+  // OSEE_CSFR_ICR is the Interrupt Control Register
   osEE_tc_set_csfr(OSEE_CSFR_ICR, icr.reg);
 }
 
@@ -295,6 +298,82 @@ OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE osEE_hal_resumeIRQ(OsEE_reg flags)
   OsEE_icr icr;
   icr.reg = flags;
   osEE_tc_set_icr(icr);
+}
+
+/*Disable Interrupt source*/
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE 
+osEE_hal_disableIRQsource(OsEE_isr_src_id src_id)
+{
+	switch (src_id)
+	{
+	case OSEE_TC_SRC_GPT120T2:
+		SRC_GPT120T2.B.SRE = 0;
+		break;
+	case OSEE_TC_SRC_GPT120T3:
+		SRC_GPT120T3.B.SRE = 0;
+		break;
+	case OSEE_TC_SRC_GPT120T4:
+		SRC_GPT120T4.B.SRE = 0;
+		break;
+	case OSEE_TC_SRC_GPT120T5:
+		SRC_GPT120T5.B.SRE = 0;
+		break;
+	case OSEE_TC_SRC_GPT120T6:
+		SRC_GPT120T6.B.SRE = 0;
+		break;
+	}
+}
+
+/* Enable Interrupt source */
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE 
+osEE_hal_enableIRQsource(OsEE_isr_src_id src_id)
+{
+	switch (src_id)
+	{
+	case OSEE_TC_SRC_GPT120T2:
+		SRC_GPT120T2.B.SRE = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T3:
+		SRC_GPT120T3.B.SRE = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T4:
+		SRC_GPT120T4.B.SRE = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T5:
+		SRC_GPT120T5.B.SRE = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T6:
+		SRC_GPT120T6.B.SRE = 1;
+		break;
+	}
+}
+
+OSEE_STATIC_INLINE void OSEE_ALWAYS_INLINE 
+osEE_hal_clearpend_int(OsEE_isr_src_id src_id)
+{
+	switch (src_id)
+	{
+	case OSEE_TC_SRC_GPT120T2:
+    SRC_GPT120T2.B.IOVCLR = 1;
+	  SRC_GPT120T2.B.CLRR = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T3:
+    SRC_GPT120T3.B.IOVCLR = 1;
+	  SRC_GPT120T3.B.CLRR = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T4:
+    SRC_GPT120T4.B.IOVCLR = 1;
+	  SRC_GPT120T4.B.CLRR = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T5:
+    SRC_GPT120T5.B.IOVCLR = 1;
+	  SRC_GPT120T5.B.CLRR = 1;
+		break;
+	case OSEE_TC_SRC_GPT120T6:
+    SRC_GPT120T6.B.IOVCLR = 1;
+	  SRC_GPT120T6.B.CLRR = 1;
+		break;
+	}
 }
 
 OSEE_STATIC_INLINE FUNC(uint8_t, OS_CODE) OSEE_ALWAYS_INLINE
@@ -360,8 +439,11 @@ OSEE_STATIC_INLINE MemSize OSEE_ALWAYS_INLINE
 OSEE_STATIC_INLINE OsEE_reg OSEE_ALWAYS_INLINE
   osEE_hal_begin_nested_primitive(void)
 {
+  /** OsEE_icr Interrupt control register data type */
+  // get the ICR register
   OsEE_icr icr = osEE_tc_get_icr();
 
+  /** ccpn: Current CPU Priority Number*/
   if (icr.bits.ccpn < OSEE_ISR2_MAX_HW_PRIO) {
     OsEE_icr icr_temp = icr;
     /* Set new CCPN value */

@@ -1300,7 +1300,7 @@ FUNC(StatusType, OS_CODE)
 );
 
 
-/*  (not yet supported)
+/*  
  *  \brief This service starts an explicitly synchronized schedule table
  *    synchronously.
  *  \ingroup primitives-schtable 
@@ -1319,7 +1319,15 @@ FUNC(StatusType, OS_CODE)
  *          - E_OS_STATE Schedule table was already started Description:
  */
 
-/*  (not yet supported)
+FUNC(StatusType, OS_CODE)
+StartScheduleTableSynchron
+(
+    VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID
+);
+
+
+
+/*  
  *  \brief This service stops synchronization of a schedule table.
  *  \ingroup primitives-schtable 
  *
@@ -1334,6 +1342,11 @@ FUNC(StatusType, OS_CODE)
  *          - E_OK No Error
  *          - E_OS_ID (Extended) Invalid ScheduleTableID
  */
+FUNC(StatusType, OS_CODE)
+SetScheduleTableAsync
+(
+    VAR(ScheduleTableType, AUTOMATIC) ScheduleTableID
+);
 #endif /* OSEE_HAS_SCHEDULE_TABLES */
 
 
@@ -1556,6 +1569,88 @@ FUNC(StatusType, OS_CODE)
 );
 #endif /* OSEE_HAS_SPINLOCKS */
 #endif /* !OSEE_SINGLECORE */
+
+/**
+ *  \brief Enables the interrupt source.
+ *  \ingroup primitives-intteruptsource
+ *  
+ *  This function Enables the interrupt source by modifying 
+ *  the interrupt controller registers. Additionally it may 
+ *  clear the interrupt pending flag
+ *  
+ *  Reference: AUTOSAR OS 8.4.35 EnableInterruptSource
+ *  
+ *  \param [in] ISRID The ID of a category 2 ISR
+ *  \param [in] ClearPending Defines whether the pending flag
+ *              shall be cleared (TRUE) or not (FALSE).
+ *  
+ *  \return The function returns a StatusType.
+ *          - E_OK No Error
+ *          - E_OS_ID ISRID is not a valid category 2 ISR identifier
+ *            (EXTENDED status)
+ *          - E_OS_CALLEVEL Wrong call context of the API function 
+ *            (EXTENDED status)
+ *          - E_OS_ACCESS The calling application is not the owner
+ *            of the ISR passed in ISRID (Service Protection)
+ */
+FUNC(StatusType, OS_CODE)
+  EnableInterruptSource
+( 
+  VAR(ISRType, AUTOMATIC) ISRID,
+  OsEE_bool ClearPending
+);
+
+/**
+ *  \brief Disables the interrupt source.
+ *  \ingroup primitives-intteruptsource
+ *  
+ *  This function Disables the interrupt source by modifying the
+ *  interrupt controller registers.
+ *  
+ *  Reference: AUTOSAR OS 8.4.36 DisableInterruptSource
+ *  
+ *  \param [in] ISRID The ID of a category 2 ISR
+ *  
+ *  \return The function returns a StatusType.
+ *          - E_OK No Error
+ *          - E_OS_ID ISRID is not a valid category 2 ISR identifier
+ *            (EXTENDED status)
+ *          - E_OS_CALLEVEL Wrong call context of the API function 
+ *            (EXTENDED status)
+ *          - E_OS_ACCESS The calling application is not the owner
+ *            of the ISR passed in ISRID (Service Protection)
+ */
+FUNC(StatusType, OS_CODE)
+  DisableInterruptSource
+( 
+  VAR(ISRType, AUTOMATIC) ISRID
+);
+
+/**
+ *  \brief Disables the interrupt source.
+ *  \ingroup primitives-intteruptsource
+ *  
+ *  This function Clears the interrupt pending flag by
+ *  modifying the interrupt controller registers.
+ *  
+ *  Reference: AUTOSAR OS 8.4.37 ClearPendingInterrupt
+ *  
+ *  \param [in] ISRID The ID of a category 2 ISR
+ *  
+ *  \return The function returns a StatusType.
+ *          - E_OK No Error
+ *          - E_OS_ID ISRID is not a valid category 2 ISR identifier
+ *            (EXTENDED status)
+ *          - E_OS_CALLEVEL Wrong call context of the API function 
+ *            (EXTENDED status)
+ *          - E_OS_ACCESS The calling application is not the owner
+ *            of the ISR passed in ISRID (Service Protection)
+ */
+FUNC(StatusType, OS_CODE)
+  ClearPendingInterrupt
+( 
+  VAR(ISRType, AUTOMATIC) ISRID
+);
 
 #if (defined(OSEE_USEGETSERVICEID)) || (defined(OSEE_USEPARAMETERACCESS))
 
