@@ -198,7 +198,7 @@ OSEE_STATIC_INLINE OsEE_isr_prio osEE_isr2_virt_to_hw_prio(TaskPrio virt_prio) {
 
 #if (!defined(OSEE_GIC_BASE))
 /* GIC base address for NVIDIA TEGRA X1 */
-#define OSEE_GIC_BASE (0x50040000U)
+#define OSEE_GIC_BASE (0x2c001000U)
 #endif /* !OSEE_GICC_BASE */
 
 #if (!defined(OSEE_GICD_OFFSET))
@@ -287,10 +287,17 @@ OSEE_STATIC_INLINE OsEE_isr_prio osEE_isr2_virt_to_hw_prio(TaskPrio virt_prio) {
 /* GICv2 revision as reported by the PIDR2 register */
 #define OSEE_GIC_ARCH_REV_GICV2       (0x02U)
 
+/*
+* For interrupt ID m, when DIV and MOD are the integer division and modulo operations:
+* the corresponding GICD_IGROUPRn number, n, is given by n = m DIV 32
+* the offset of the required GICD_IGROUPR is (0x080 + (4*n))
+* the bit number of the required group status bit in this register is m MOD 32.
+*/
+
 OSEE_STATIC_INLINE uint32_t osEE_gicd_read_igroupr(ISRSource source_id)
 {
-  unsigned int n = source_id >> OSEE_GICD_IGROUPR_SHIFT;
-  return osEE_mmio_read32(OSEE_GICD_BASE + OSEE_GICD_IGROUPR + (n << 2));
+  unsigned int n = source_id >> OSEE_GICD_IGROUPR_SHIFT;                        
+  return osEE_mmio_read32(OSEE_GICD_BASE + OSEE_GICD_IGROUPR + (n << 2));      
 }
 
 OSEE_STATIC_INLINE void

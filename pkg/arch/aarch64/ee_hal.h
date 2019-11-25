@@ -153,7 +153,7 @@ OSEE_STATIC_INLINE OsEE_stack * osEE_get_SP(void)
 /*==============================================================================
                            Generic Timer Support
  =============================================================================*/
-#define OSEE_GTIMER_IRQ (27U)
+#define OSEE_GTIMER_IRQ (30U)
 /* Macro used as System Timer device */
 #define OSEE_AARCH64_GTIMER OSEE_GTIMER_IRQ
 #if (defined(OSEE_HAS_SYSTEM_TIMER))
@@ -188,11 +188,11 @@ OSEE_STATIC_INLINE void osEE_aarch64_gtimer_start(OsEE_reg timeout,
   enum osEE_aarch64_gtimer_mode mode)
 {
   if (mode == OSEE_AARCH64_GTIMER_COUNTDOWN) {
-    OSEE_AARCH64_MSR(cntv_tval_el0, timeout);
+    OSEE_AARCH64_MSR(cntp_tval_el0, timeout);
   } else {
-    OSEE_AARCH64_MSR(cntv_cval_el0, timeout);
+    OSEE_AARCH64_MSR(cntp_cval_el0, timeout);
   }
-  OSEE_AARCH64_MSR(cntv_ctl_el0, 1U);
+  OSEE_AARCH64_MSR(cntp_ctl_el0, 1U);
 }
 
 /*=============================================================================
