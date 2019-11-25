@@ -52,7 +52,7 @@
 #define OSEE_AARCH64_GIC_H
 
 /* GIC base address for NVIDIA TEGRA X1 */
-#define OSEE_GIC_BASE     (0x50040000U)
+#define OSEE_GIC_BASE     (0x2c000000U)
 #define OSEE_GICD_OFFSET  (0x1000U)
 #define OSEE_GICC_OFFSET  (0x2000U)
 #define OSEE_GICH_OFFSET  (0x4000U)
